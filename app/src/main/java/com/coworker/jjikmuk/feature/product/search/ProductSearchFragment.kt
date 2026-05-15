@@ -11,7 +11,7 @@ import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.chat.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.dummy.ProductDummyData
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
-import com.coworker.jjikmuk.feature.product.detail.BottomNavController
+import com.coworker.jjikmuk.core.navigation.BottomNavController
 
 class ProductSearchFragment : Fragment() {
 

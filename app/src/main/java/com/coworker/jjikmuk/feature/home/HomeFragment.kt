@@ -18,7 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.chat.ChatFragment
-import com.coworker.jjikmuk.feature.product.detail.BottomNavController
+import com.coworker.jjikmuk.core.navigation.BottomNavController
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
