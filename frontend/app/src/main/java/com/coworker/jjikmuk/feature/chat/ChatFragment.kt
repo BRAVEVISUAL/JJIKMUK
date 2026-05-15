@@ -19,6 +19,7 @@ import com.coworker.jjikmuk.feature.chat.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.dummy.ProductDummyData
 import com.coworker.jjikmuk.feature.product.search.ProductSearchFragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
 
 class ChatFragment : Fragment() {
 
@@ -177,9 +178,12 @@ class ChatFragment : Fragment() {
             bottomSheetView.findViewById<TextView>(R.id.btnMoreProducts)
 
         val adapter = RecommendProductAdapter { product ->
-            // 나중에 상품 상세 페이지 이동 연결
-            // 예: ProductDetailFragment.newInstance(product.id)
             dialog.dismiss()
+
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.mainContainer, ProductDetailFragment.newInstance(product.id))
+                .addToBackStack(null)
+                .commit()
         }
 
         rvRecommendProducts.layoutManager = LinearLayoutManager(requireContext())

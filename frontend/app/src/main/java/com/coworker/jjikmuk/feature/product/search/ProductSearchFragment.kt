@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.chat.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.dummy.ProductDummyData
+import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
+import com.coworker.jjikmuk.core.navigation.BottomNavController
 
 class ProductSearchFragment : Fragment() {
 
@@ -33,12 +35,15 @@ class ProductSearchFragment : Fragment() {
         }
 
         val adapter = RecommendProductAdapter { product ->
-            // 나중에 상품 상세 페이지가 생기면 여기에서 ProductDetailFragment로 이동하면 됩니다.
-            // 예: ProductDetailFragment.newInstance(product.id)
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.mainContainer, ProductDetailFragment.newInstance(product.id)).addToBackStack(null)
+                .commit()
         }
 
         rvProductSearchResults.layoutManager = LinearLayoutManager(requireContext())
         rvProductSearchResults.adapter = adapter
         adapter.submitList(ProductDummyData.recommendProducts)
+
+        BottomNavController.bind(view, parentFragmentManager, requireContext())
     }
 }

@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.chat.ChatFragment
+import com.coworker.jjikmuk.core.navigation.BottomNavController
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
@@ -60,6 +61,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val btnSend = view.findViewById<ImageButton>(R.id.btnSend)
 
         updateSelectedProfileImages()
+
+        BottomNavController.bind(view, parentFragmentManager, requireContext())
 
         layoutSelectedProfiles.setOnClickListener {
             showScanTargetPopup(layoutSelectedProfiles)
