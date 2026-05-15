@@ -4,12 +4,7 @@ plugins {
 
 android {
     namespace = "com.coworker.jjikmuk"
-
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.coworker.jjikmuk"
@@ -50,7 +45,17 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.recyclerview)
     implementation(libs.material)
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // Lifecycle / ViewModel
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+
+    // DataStore
+    implementation(libs.androidx.datastore.preferences)
+
+    // Hilt runtime only
+    // Hilt Gradle Plugin / compiler 적용은 다음 단계에서 별도 검증합니다.
+    implementation(libs.hilt.android)
 
     // Test
     testImplementation(libs.junit)
