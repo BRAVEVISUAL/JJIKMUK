@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.recyclerview)
     implementation(libs.material)
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     // Test
     testImplementation(libs.junit)

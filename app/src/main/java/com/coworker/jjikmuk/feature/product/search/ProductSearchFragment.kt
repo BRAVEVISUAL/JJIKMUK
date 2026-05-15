@@ -11,6 +11,7 @@ import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.chat.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.dummy.ProductDummyData
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
+import com.coworker.jjikmuk.feature.product.detail.BottomNavController
 
 class ProductSearchFragment : Fragment() {
 
@@ -35,13 +36,14 @@ class ProductSearchFragment : Fragment() {
 
         val adapter = RecommendProductAdapter { product ->
             parentFragmentManager.beginTransaction()
-                .replace(R.id.mainContainer, ProductDetailFragment.newInstance(product.id))
-                .addToBackStack(null)
+                .replace(R.id.mainContainer, ProductDetailFragment.newInstance(product.id)).addToBackStack(null)
                 .commit()
         }
 
         rvProductSearchResults.layoutManager = LinearLayoutManager(requireContext())
         rvProductSearchResults.adapter = adapter
         adapter.submitList(ProductDummyData.recommendProducts)
+
+        BottomNavController.bind(view, parentFragmentManager, requireContext())
     }
 }
