@@ -18,18 +18,6 @@ class FavoriteRepositoryImpl(
     }
 
     override suspend fun getFavoriteProducts(): List<Product> {
-        return FavoriteProductStore.getFavoriteProducts(context).map { recommendProduct ->
-            recommendProduct.toProduct()
-        }
-    }
-
-    private fun com.coworker.jjikmuk.feature.chat.model.RecommendProduct.toProduct(): Product {
-        return Product(
-            id = id,
-            category = category,
-            name = name,
-            imageResId = imageResId,
-            allergyTags = allergyTags
-        )
+        return FavoriteProductStore.getFavoriteProducts(context)
     }
 }

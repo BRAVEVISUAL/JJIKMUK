@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.coworker.jjikmuk.feature.chat.model.RecommendProduct
+import com.coworker.jjikmuk.domain.model.Product
 import com.coworker.jjikmuk.feature.product.dummy.ProductDummyData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -49,7 +49,7 @@ object FavoriteProductStore {
         return isNowFavorite
     }
 
-    suspend fun getFavoriteProducts(context: Context): List<RecommendProduct> {
+    suspend fun getFavoriteProducts(context: Context): List<Product> {
         val favoriteIds = getFavoriteProductIds(context).first()
 
         return ProductDummyData.recommendProducts.filter { product ->
