@@ -12,24 +12,28 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
-import com.coworker.jjikmuk.data.repository.ChatRepositoryImpl
-import com.coworker.jjikmuk.domain.repository.ChatRepository
+import com.coworker.jjikmuk.domain.model.ChatMessage
 import com.coworker.jjikmuk.feature.chat.adapter.RecommendProductAdapter
+import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
 import com.coworker.jjikmuk.feature.product.search.ProductSearchFragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
+import kotlinx.coroutines.launch
 
 class ChatFragment : Fragment() {
 
-    private val chatRepository: ChatRepository = ChatRepositoryImpl()
+    private val viewModel: ChatViewModel by viewModels()
 
     private lateinit var scrollChatMessages: ScrollView
     private lateinit var layoutChatMessages: LinearLayout
     private lateinit var etChatMessage: EditText
     private lateinit var btnChatSend: ImageButton
+    private lateinit var tvChatTitle: TextView
+    private var lastRenderedMessageCount: Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,22 +52,18 @@ class ChatFragment : Fragment() {
         btnChatSend = view.findViewById(R.id.btnChatSend)
 
         val btnChatBack = view.findViewById<ImageButton>(R.id.btnChatBack)
-        val tvChatTitle = view.findViewById<TextView>(R.id.tvChatTitle)
+        tvChatTitle = view.findViewById(R.id.tvChatTitle)
 
         btnChatBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
 
+        observeViewModel()
+
         val initialMessage = arguments?.getString(ARG_INITIAL_MESSAGE).orEmpty()
 
         if (initialMessage.isNotBlank()) {
-            tvChatTitle.text = makeTitle(initialMessage)
-            addUserMessage(initialMessage)
-            addBotMessage(chatRepository.makeDummyResponse(initialMessage))
-
-            scrollChatMessages.postDelayed({
-                showRecommendProductBottomSheet()
-            }, 500)
+            viewModel.startChat(initialMessage)
         }
 
         btnChatSend.setOnClickListener {
@@ -85,14 +85,40 @@ class ChatFragment : Fragment() {
 
         if (message.isEmpty()) return
 
-        addUserMessage(message)
         etChatMessage.text.clear()
+        viewModel.sendMessage(message)
+    }
 
-        addBotMessage(chatRepository.makeDummyResponse(message))
+    private fun observeViewModel() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.uiState.collect { state ->
+                tvChatTitle.text = state.title
+                renderMessages(state.messages)
 
-        scrollChatMessages.postDelayed({
-            showRecommendProductBottomSheet()
-        }, 500)
+                if (state.shouldShowRecommendSheet) {
+                    scrollChatMessages.postDelayed({
+                        showRecommendProductBottomSheet()
+                        viewModel.onRecommendSheetShown()
+                    }, 500)
+                }
+            }
+        }
+    }
+
+    private fun renderMessages(messages: List<ChatMessage>) {
+        if (messages.size < lastRenderedMessageCount) {
+            layoutChatMessages.removeAllViews()
+            lastRenderedMessageCount = 0
+        }
+
+        messages.drop(lastRenderedMessageCount).forEach { message ->
+            when (message.senderType) {
+                ChatMessage.SenderType.USER -> addUserMessage(message.text)
+                ChatMessage.SenderType.BOT -> addBotMessage(message.text)
+            }
+        }
+
+        lastRenderedMessageCount = messages.size
     }
 
     private fun addUserMessage(message: String) {
@@ -193,7 +219,7 @@ class ChatFragment : Fragment() {
         rvRecommendProducts.adapter = adapter
         rvRecommendProducts.isNestedScrollingEnabled = false
 
-        adapter.submitList(chatRepository.getRecommendProducts(limit = 2))
+        adapter.submitList(viewModel.uiState.value.recommendedProducts)
 
         btnMoreProducts.setOnClickListener {
             dialog.dismiss()
@@ -211,14 +237,6 @@ class ChatFragment : Fragment() {
     private fun scrollToBottom() {
         scrollChatMessages.post {
             scrollChatMessages.fullScroll(View.FOCUS_DOWN)
-        }
-    }
-
-    private fun makeTitle(message: String): String {
-        return if (message.length > 12) {
-            message.take(12) + ".."
-        } else {
-            message
         }
     }
 

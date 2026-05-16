@@ -12,12 +12,13 @@ import com.coworker.jjikmuk.feature.chat.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
 import com.coworker.jjikmuk.core.navigation.BottomNavController
 
-import com.coworker.jjikmuk.data.repository.ProductRepositoryImpl
-import com.coworker.jjikmuk.domain.repository.ProductRepository
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class ProductSearchFragment : Fragment() {
 
-    private val productRepository: ProductRepository = ProductRepositoryImpl()
+    private val viewModel: ProductSearchViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,7 +48,13 @@ class ProductSearchFragment : Fragment() {
 
         rvProductSearchResults.layoutManager = LinearLayoutManager(requireContext())
         rvProductSearchResults.adapter = adapter
-        adapter.submitList(productRepository.getAllProducts())
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.uiState.collect { state ->
+                adapter.submitList(state.products)
+            }
+        }
+
+        viewModel.loadProducts()
 
         BottomNavController.bind(view, parentFragmentManager, requireContext())
     }
