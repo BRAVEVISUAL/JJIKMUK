@@ -15,13 +15,16 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
+import com.coworker.jjikmuk.data.repository.ChatRepositoryImpl
+import com.coworker.jjikmuk.domain.repository.ChatRepository
 import com.coworker.jjikmuk.feature.chat.adapter.RecommendProductAdapter
-import com.coworker.jjikmuk.feature.product.dummy.ProductDummyData
 import com.coworker.jjikmuk.feature.product.search.ProductSearchFragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
 
 class ChatFragment : Fragment() {
+
+    private val chatRepository: ChatRepository = ChatRepositoryImpl()
 
     private lateinit var scrollChatMessages: ScrollView
     private lateinit var layoutChatMessages: LinearLayout
@@ -56,7 +59,7 @@ class ChatFragment : Fragment() {
         if (initialMessage.isNotBlank()) {
             tvChatTitle.text = makeTitle(initialMessage)
             addUserMessage(initialMessage)
-            addBotMessage(makeDummyResponse(initialMessage))
+            addBotMessage(chatRepository.makeDummyResponse(initialMessage))
 
             scrollChatMessages.postDelayed({
                 showRecommendProductBottomSheet()
@@ -85,7 +88,7 @@ class ChatFragment : Fragment() {
         addUserMessage(message)
         etChatMessage.text.clear()
 
-        addBotMessage(makeDummyResponse(message))
+        addBotMessage(chatRepository.makeDummyResponse(message))
 
         scrollChatMessages.postDelayed({
             showRecommendProductBottomSheet()
@@ -190,7 +193,7 @@ class ChatFragment : Fragment() {
         rvRecommendProducts.adapter = adapter
         rvRecommendProducts.isNestedScrollingEnabled = false
 
-        adapter.submitList(ProductDummyData.recommendProducts.take(2))
+        adapter.submitList(chatRepository.getRecommendProducts(limit = 2))
 
         btnMoreProducts.setOnClickListener {
             dialog.dismiss()
@@ -217,10 +220,6 @@ class ChatFragment : Fragment() {
         } else {
             message
         }
-    }
-
-    private fun makeDummyResponse(userMessage: String): String {
-        return "'$userMessage'에 대해 확인해볼게요. 입력한 음식명이나 제품명을 기준으로 성분, 알레르기 가능성, 섭취 시 주의할 점을 안내할 수 있습니다. 실제 서비스에서는 이 부분에 챗봇 API 응답을 연결하면 됩니다."
     }
 
     private fun dp(value: Int): Int {

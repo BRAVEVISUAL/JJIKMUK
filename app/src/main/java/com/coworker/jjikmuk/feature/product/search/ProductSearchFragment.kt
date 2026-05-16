@@ -9,11 +9,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.chat.adapter.RecommendProductAdapter
-import com.coworker.jjikmuk.feature.product.dummy.ProductDummyData
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
 import com.coworker.jjikmuk.core.navigation.BottomNavController
 
+import com.coworker.jjikmuk.data.repository.ProductRepositoryImpl
+import com.coworker.jjikmuk.domain.repository.ProductRepository
+
 class ProductSearchFragment : Fragment() {
+
+    private val productRepository: ProductRepository = ProductRepositoryImpl()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,13 +40,14 @@ class ProductSearchFragment : Fragment() {
 
         val adapter = RecommendProductAdapter { product ->
             parentFragmentManager.beginTransaction()
-                .replace(R.id.mainContainer, ProductDetailFragment.newInstance(product.id)).addToBackStack(null)
+                .replace(R.id.mainContainer, ProductDetailFragment.newInstance(product.id))
+                .addToBackStack(null)
                 .commit()
         }
 
         rvProductSearchResults.layoutManager = LinearLayoutManager(requireContext())
         rvProductSearchResults.adapter = adapter
-        adapter.submitList(ProductDummyData.recommendProducts)
+        adapter.submitList(productRepository.getAllProducts())
 
         BottomNavController.bind(view, parentFragmentManager, requireContext())
     }

@@ -9,17 +9,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
-import com.coworker.jjikmuk.feature.chat.model.RecommendProduct
+import com.coworker.jjikmuk.domain.model.Product
 
-/**
- * 채팅 화면의 추천 상품 바텀시트에서 사용하는 RecyclerView Adapter입니다.
- *
- * feature/chat/adapter에 위치하며,
- * 화면 표시용 모델인 feature/chat/model/RecommendProduct를 바인딩합니다.
- */
 class RecommendProductAdapter(
-    private val onItemClick: (RecommendProduct) -> Unit
-) : ListAdapter<RecommendProduct, RecommendProductAdapter.RecommendProductViewHolder>(
+    private val onItemClick: (Product) -> Unit
+) : ListAdapter<Product, RecommendProductAdapter.RecommendProductViewHolder>(
     RecommendProductDiffCallback()
 ) {
 
@@ -36,7 +30,7 @@ class RecommendProductAdapter(
 
     class RecommendProductViewHolder(
         itemView: View,
-        private val onItemClick: (RecommendProduct) -> Unit
+        private val onItemClick: (Product) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
 
         private val tvProductCategory: TextView =
@@ -54,7 +48,7 @@ class RecommendProductAdapter(
         private val ivProductImage: ImageView =
             itemView.findViewById(R.id.ivProductImage)
 
-        fun bind(product: RecommendProduct) {
+        fun bind(product: Product) {
             tvProductCategory.text = product.category
             tvProductName.text = product.name
             ivProductImage.setImageResource(product.imageResId)
@@ -82,17 +76,17 @@ class RecommendProductAdapter(
         }
     }
 
-    private class RecommendProductDiffCallback : DiffUtil.ItemCallback<RecommendProduct>() {
+    private class RecommendProductDiffCallback : DiffUtil.ItemCallback<Product>() {
         override fun areItemsTheSame(
-            oldItem: RecommendProduct,
-            newItem: RecommendProduct
+            oldItem: Product,
+            newItem: Product
         ): Boolean {
             return oldItem.id == newItem.id
         }
 
         override fun areContentsTheSame(
-            oldItem: RecommendProduct,
-            newItem: RecommendProduct
+            oldItem: Product,
+            newItem: Product
         ): Boolean {
             return oldItem == newItem
         }
