@@ -8,12 +8,14 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.core.navigation.BottomNavController
-import com.coworker.jjikmuk.feature.chat.adapter.RecommendProductAdapter
+import com.coworker.jjikmuk.feature.product.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
 import kotlinx.coroutines.launch
 
@@ -78,12 +80,14 @@ class HistoryFragment : Fragment() {
 
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.uiState.collect { state ->
-                favoriteAdapter.submitList(state.favoriteProducts)
-                tvEmptyFavoriteProducts.visibility = if (state.favoriteProducts.isEmpty()) {
-                    View.VISIBLE
-                } else {
-                    View.GONE
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    favoriteAdapter.submitList(state.favoriteProducts)
+                    tvEmptyFavoriteProducts.visibility = if (state.favoriteProducts.isEmpty()) {
+                        View.VISIBLE
+                    } else {
+                        View.GONE
+                    }
                 }
             }
         }

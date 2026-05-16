@@ -1,4 +1,4 @@
-package com.coworker.jjikmuk.feature.chat.adapter
+package com.coworker.jjikmuk.feature.product.adapter
 
 import android.view.LayoutInflater
 import android.view.View

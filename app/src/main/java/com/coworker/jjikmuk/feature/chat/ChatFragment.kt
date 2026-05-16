@@ -13,12 +13,14 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.domain.model.ChatMessage
-import com.coworker.jjikmuk.feature.chat.adapter.RecommendProductAdapter
+import com.coworker.jjikmuk.feature.product.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
 import com.coworker.jjikmuk.feature.product.search.ProductSearchFragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -91,15 +93,17 @@ class ChatFragment : Fragment() {
 
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.uiState.collect { state ->
-                tvChatTitle.text = state.title
-                renderMessages(state.messages)
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    tvChatTitle.text = state.title
+                    renderMessages(state.messages)
 
-                if (state.shouldShowRecommendSheet) {
-                    scrollChatMessages.postDelayed({
-                        showRecommendProductBottomSheet()
-                        viewModel.onRecommendSheetShown()
-                    }, 500)
+                    if (state.shouldShowRecommendSheet) {
+                        scrollChatMessages.postDelayed({
+                            showRecommendProductBottomSheet()
+                            viewModel.onRecommendSheetShown()
+                        }, 500)
+                    }
                 }
             }
         }
