@@ -19,7 +19,9 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.chat.ChatFragment
 import com.coworker.jjikmuk.core.navigation.BottomNavController
@@ -69,9 +71,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.uiState.collect { state ->
-                currentProfiles = state.profiles
-                updateSelectedProfileImages(state.selectedProfiles)
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    currentProfiles = state.profiles
+                    updateSelectedProfileImages(state.selectedProfiles)
+                }
             }
         }
     }
