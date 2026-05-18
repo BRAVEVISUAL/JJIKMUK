@@ -20,7 +20,7 @@ class ChatHistoryViewModel : ViewModel() {
     }
 
     fun loadChatHistories() {
-        val histories = repository.getChatHistories()
+        val histories = sortHistories(repository.getChatHistories())
         _uiState.update { state ->
             state.copy(
                 histories = histories,
@@ -42,6 +42,43 @@ class ChatHistoryViewModel : ViewModel() {
         _uiState.update { state ->
             state.copy(isEditMode = !state.isEditMode)
         }
+    }
+
+    fun pinChatHistory(historyId: Long) {
+        _uiState.update { state ->
+            val histories = state.histories.map { history ->
+                if (history.id == historyId) {
+                    history.copy(isPinned = !history.isPinned)
+                } else {
+                    history
+                }
+            }.let(::sortHistories)
+
+            state.copy(
+                histories = histories,
+                filteredHistories = filterHistories(histories, state.searchQuery)
+            )
+        }
+    }
+
+    fun deleteChatHistory(historyId: Long) {
+        _uiState.update { state ->
+            val histories = state.histories.filterNot { history ->
+                history.id == historyId
+            }
+
+            state.copy(
+                histories = histories,
+                filteredHistories = filterHistories(histories, state.searchQuery)
+            )
+        }
+    }
+
+    private fun sortHistories(histories: List<ChatHistory>): List<ChatHistory> {
+        return histories.sortedWith(
+            compareByDescending<ChatHistory> { history -> history.isPinned }
+                .thenBy { history -> history.id }
+        )
     }
 
     private fun filterHistories(
