@@ -208,10 +208,10 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
             }
 
             override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
-                super.clearView(recyclerView, viewHolder)
-
                 val position = viewHolder.bindingAdapterPosition
                 if (position == RecyclerView.NO_POSITION) return
+
+                viewHolder.itemView.animate().cancel()
 
                 if (pendingOpenPosition == position && pendingOpenDirection != 0) {
                     if (openedPosition != RecyclerView.NO_POSITION && openedPosition != position) {
@@ -222,16 +222,11 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
 
                     openedPosition = position
                     openedDirection = pendingOpenDirection
-                    viewHolder.itemView.animate()
-                        .translationX(
-                            if (openedDirection == ItemTouchHelper.RIGHT) {
-                                actionWidth.toFloat()
-                            } else {
-                                -actionWidth.toFloat()
-                            }
-                        )
-                        .setDuration(120L)
-                        .start()
+                    viewHolder.itemView.translationX = if (openedDirection == ItemTouchHelper.RIGHT) {
+                        actionWidth.toFloat()
+                    } else {
+                        -actionWidth.toFloat()
+                    }
                     recyclerView.invalidateItemDecorations()
                 } else {
                     if (openedPosition == position) {
