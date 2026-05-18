@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <ImageButton
+        android:id="@+id/btnChatHistoryBack"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="40dp"
+        android:background="@android:color/transparent"
+        android:backgroundTint="@android:color/transparent"
+        android:contentDescription="뒤로가기"
+        android:padding="0dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="TouchTargetSizeCheck" />
+
+    <View
+        android:id="@+id/viewChatHistoryProfile"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/bg_profile_circle"
+        app:layout_constraintBottom_toBottomOf="@id/btnChatHistoryBack"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btnChatHistoryBack" />
+
+    <TextView
+        android:id="@+id/tvChatHistoryTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="18dp"
+        android:text="Chat"
+        android:textColor="@color/jjikmuk_green"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnChatHistoryBack" />
+
+    <LinearLayout
+        android:id="@+id/layoutChatHistorySearch"
+        android:layout_width="0dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/bg_chat_history_search"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="12dp"
+        app:layout_constraintEnd_toStartOf="@id/tvChatHistoryEdit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvChatHistoryTitle">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:contentDescription="검색"
+            android:src="@drawable/ic_chat_history_search" />
+
+        <EditText
+            android:id="@+id/etChatHistorySearch"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:hint="Rick Astley"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:singleLine="true"
+            android:textColor="#222222"
+            android:textColorHint="#D8D8D8"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvChatHistoryEdit"
+        android:layout_width="44dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="24dp"
+        android:gravity="center"
+        android:text="편집"
+        android:textColor="#9E9E9E"
+        android:textSize="11sp"
+        app:layout_constraintBottom_toBottomOf="@id/layoutChatHistorySearch"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/layoutChatHistorySearch" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvChatHistories"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="18dp"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingBottom="12dp"
+        app:layout_constraintBottom_toTopOf="@id/layoutBottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutChatHistorySearch"
+        tools:itemCount="5"
+        tools:listitem="@layout/item_chat_history" />
+
+    <TextView
+        android:id="@+id/tvEmptyChatHistories"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="채팅 기록이 없습니다."
+        android:textColor="@color/jjikmuk_text_gray"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/rvChatHistories"
+        app:layout_constraintEnd_toEndOf="@id/rvChatHistories"
+        app:layout_constraintStart_toStartOf="@id/rvChatHistories"
+        app:layout_constraintTop_toTopOf="@id/rvChatHistories" />
+
+    <include
+        android:id="@+id/layoutBottomNav"
+        layout="@layout/layout_bottom_nav"
+        android:layout_width="0dp"
+        android:layout_height="92dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
