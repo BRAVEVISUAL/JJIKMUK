@@ -8,6 +8,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -16,6 +17,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
+import com.coworker.jjikmuk.domain.model.UploadOption
 import com.coworker.jjikmuk.feature.chat.adapter.ChatMessageAdapter
 import com.coworker.jjikmuk.feature.product.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
@@ -47,6 +49,7 @@ class ChatFragment : Fragment() {
         rvChatMessages = view.findViewById(R.id.rvChatMessages)
         etChatMessage = view.findViewById(R.id.etChatMessage)
         btnChatSend = view.findViewById(R.id.btnChatSend)
+        val btnChatPlus = view.findViewById<ImageButton>(R.id.btnChatPlus)
 
         setupChatMessageRecyclerView()
 
@@ -63,6 +66,11 @@ class ChatFragment : Fragment() {
 
         if (initialMessage.isNotBlank()) {
             viewModel.startChat(initialMessage)
+        }
+
+        btnChatPlus.setOnClickListener {
+            etChatMessage.clearFocus()
+            showUploadOptionBottomSheet()
         }
 
         btnChatSend.setOnClickListener {
@@ -101,19 +109,69 @@ class ChatFragment : Fragment() {
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { state ->
-                    tvChatTitle.text = state.title
-                    chatMessageAdapter.submitList(state.messages) {
-                        scrollToBottom()
-                    }
+                launch {
+                    viewModel.uiState.collect { state ->
+                        tvChatTitle.text = state.title
+                        chatMessageAdapter.submitList(state.messages) {
+                            scrollToBottom()
+                        }
 
-                    if (state.shouldShowRecommendSheet) {
-                        rvChatMessages.postDelayed({
-                            showRecommendProductBottomSheet()
-                            viewModel.onRecommendSheetShown()
-                        }, 500)
+                        if (state.shouldShowRecommendSheet) {
+                            rvChatMessages.postDelayed({
+                                showRecommendProductBottomSheet()
+                                viewModel.onRecommendSheetShown()
+                            }, 500)
+                        }
                     }
                 }
+
+                launch {
+                    viewModel.uploadOptionEvent.collect { option ->
+                        handleUploadOption(option)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showUploadOptionBottomSheet() {
+        val dialog = BottomSheetDialog(requireContext())
+        val bottomSheetView = layoutInflater.inflate(
+            R.layout.bottom_sheet_home_upload_options,
+            null
+        )
+
+        bottomSheetView.findViewById<View>(R.id.layoutTakePhoto).setOnClickListener {
+            dialog.dismiss()
+            viewModel.onUploadOptionSelected(UploadOption.TAKE_PHOTO)
+        }
+
+        bottomSheetView.findViewById<View>(R.id.layoutUploadImage).setOnClickListener {
+            dialog.dismiss()
+            viewModel.onUploadOptionSelected(UploadOption.UPLOAD_IMAGE)
+        }
+
+        bottomSheetView.findViewById<View>(R.id.layoutUploadFile).setOnClickListener {
+            dialog.dismiss()
+            viewModel.onUploadOptionSelected(UploadOption.UPLOAD_FILE)
+        }
+
+        dialog.setContentView(bottomSheetView)
+        dialog.show()
+    }
+
+    private fun handleUploadOption(option: UploadOption) {
+        when (option) {
+            UploadOption.TAKE_PHOTO -> {
+                Toast.makeText(requireContext(), "사진찍기 기능을 준비 중입니다.", Toast.LENGTH_SHORT).show()
+            }
+
+            UploadOption.UPLOAD_IMAGE -> {
+                Toast.makeText(requireContext(), "이미지 업로드 기능을 준비 중입니다.", Toast.LENGTH_SHORT).show()
+            }
+
+            UploadOption.UPLOAD_FILE -> {
+                Toast.makeText(requireContext(), "파일 업로드 기능을 준비 중입니다.", Toast.LENGTH_SHORT).show()
             }
         }
     }
