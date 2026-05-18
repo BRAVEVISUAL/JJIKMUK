@@ -1,11 +1,16 @@
 package com.coworker.jjikmuk.feature.home
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.domain.model.UserProfile
+import com.coworker.jjikmuk.domain.model.UploadOption
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
 
@@ -38,6 +43,9 @@ class HomeViewModel : ViewModel() {
     )
     val uiState: StateFlow<HomeUiState> = _uiState
 
+    private val _event = MutableSharedFlow<HomeEvent>()
+    val event: SharedFlow<HomeEvent> = _event
+
     fun updateInputMessage(message: String) {
         _uiState.update { state ->
             state.copy(inputMessage = message)
@@ -58,6 +66,18 @@ class HomeViewModel : ViewModel() {
                 profiles = updatedProfiles,
                 selectedProfiles = updatedProfiles.filter { profile -> profile.isSelected }
             )
+        }
+    }
+
+    fun onUploadOptionSelected(option: UploadOption) {
+        viewModelScope.launch {
+            val event = when (option) {
+                UploadOption.TAKE_PHOTO -> HomeEvent.OpenCamera
+                UploadOption.UPLOAD_IMAGE -> HomeEvent.OpenImagePicker
+                UploadOption.UPLOAD_FILE -> HomeEvent.OpenFilePicker
+            }
+
+            _event.emit(event)
         }
     }
 
