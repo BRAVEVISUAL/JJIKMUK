@@ -78,8 +78,9 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
         val deleteIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_swipe_action_right)
         var openedPosition = RecyclerView.NO_POSITION
         var openedDirection = 0
-        var pendingOpenPosition = RecyclerView.NO_POSITION
-        var pendingOpenDirection = 0
+        var maxSwipePosition = RecyclerView.NO_POSITION
+        var maxSwipeDirection = 0
+        var maxSwipeDistance = 0f
 
         fun closeOpenedItem() {
             if (openedPosition == RecyclerView.NO_POSITION) return
@@ -94,6 +95,12 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
             openedPosition = RecyclerView.NO_POSITION
             openedDirection = 0
             rvChatHistories.invalidateItemDecorations()
+        }
+
+        fun resetSwipeTracking() {
+            maxSwipePosition = RecyclerView.NO_POSITION
+            maxSwipeDirection = 0
+            maxSwipeDistance = 0f
         }
 
         fun drawAction(
@@ -209,11 +216,18 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
 
             override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
                 val position = viewHolder.bindingAdapterPosition
-                if (position == RecyclerView.NO_POSITION) return
+                if (position == RecyclerView.NO_POSITION) {
+                    resetSwipeTracking()
+                    return
+                }
 
                 viewHolder.itemView.animate().cancel()
 
-                if (pendingOpenPosition == position && pendingOpenDirection != 0) {
+                if (
+                    maxSwipePosition == position &&
+                    maxSwipeDirection != 0 &&
+                    maxSwipeDistance >= openThreshold
+                ) {
                     if (openedPosition != RecyclerView.NO_POSITION && openedPosition != position) {
                         recyclerView.findViewHolderForAdapterPosition(openedPosition)
                             ?.itemView
@@ -221,7 +235,7 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
                     }
 
                     openedPosition = position
-                    openedDirection = pendingOpenDirection
+                    openedDirection = maxSwipeDirection
                     viewHolder.itemView.translationX = if (openedDirection == ItemTouchHelper.RIGHT) {
                         actionWidth.toFloat()
                     } else {
@@ -240,8 +254,7 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
                     recyclerView.invalidateItemDecorations()
                 }
 
-                pendingOpenPosition = RecyclerView.NO_POSITION
-                pendingOpenDirection = 0
+                resetSwipeTracking()
             }
 
             override fun onChildDraw(
@@ -261,23 +274,20 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
                     clampedDx < 0f -> ItemTouchHelper.LEFT
                     else -> 0
                 }
+                val distance = abs(clampedDx)
 
-                if (isCurrentlyActive && position != RecyclerView.NO_POSITION) {
-                    val shouldOpen = abs(clampedDx) >= openThreshold
-                    pendingOpenPosition = if (shouldOpen) {
-                        position
-                    } else {
-                        RecyclerView.NO_POSITION
-                    }
-                    pendingOpenDirection = if (shouldOpen) {
-                        direction
-                    } else {
-                        0
+                if (isCurrentlyActive && position != RecyclerView.NO_POSITION && direction != 0) {
+                    if (maxSwipePosition != position || maxSwipeDirection != direction) {
+                        maxSwipePosition = position
+                        maxSwipeDirection = direction
+                        maxSwipeDistance = distance
+                    } else if (distance > maxSwipeDistance) {
+                        maxSwipeDistance = distance
                     }
                 }
 
                 if (direction != 0) {
-                    drawAction(c, itemView, direction, abs(clampedDx).toInt())
+                    drawAction(c, itemView, direction, distance.toInt())
                 }
 
                 super.onChildDraw(
