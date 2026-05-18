@@ -19,88 +19,61 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/tvUploadOptionTitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="추가할 항목을 선택하세요"
-        android:textColor="#111111"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/viewBottomSheetHandle" />
-
-    <TextView
-        android:id="@+id/tvUploadOptionDescription"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="사진 촬영, 이미지 업로드, 파일 업로드 중 하나를 선택할 수 있습니다."
-        android:textColor="#777777"
-        android:textSize="13sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvUploadOptionTitle" />
-
     <LinearLayout
         android:id="@+id/layoutTakePhoto"
         android:layout_width="0dp"
-        android:layout_height="64dp"
-        android:layout_marginTop="24dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="28dp"
         android:background="@drawable/bg_input_box"
+        android:backgroundTint="#FFFFFF"
+        android:elevation="0dp"
         android:clickable="true"
         android:focusable="true"
+        android:foreground="@drawable/bg_upload_option_border"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvUploadOptionDescription">
+        app:layout_constraintTop_toBottomOf="@id/viewBottomSheetHandle">
 
         <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/bg_camera_circle"
             android:contentDescription="사진찍기"
-            android:padding="9dp"
-            android:src="@drawable/ic_home_plus" />
+            android:src="@drawable/ic_upload_takephoto" />
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginStart="14dp"
             android:layout_weight="1"
+            android:gravity="center_vertical"
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 android:text="사진찍기"
                 android:textColor="#111111"
                 android:textSize="15sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="카메라로 식품 정보를 바로 촬영합니다."
-                android:textColor="#777777"
-                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/layoutUploadImage"
         android:layout_width="0dp"
-        android:layout_height="64dp"
+        android:layout_height="80dp"
         android:layout_marginTop="12dp"
         android:background="@drawable/bg_input_box"
+        android:backgroundTint="#FFFFFF"
+        android:elevation="0dp"
         android:clickable="true"
         android:focusable="true"
+        android:foreground="@drawable/bg_upload_option_border"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="16dp"
@@ -112,44 +85,39 @@
         <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/bg_camera_circle"
             android:contentDescription="이미지 업로드"
-            android:padding="9dp"
-            android:src="@drawable/ic_home_plus" />
+            android:src="@drawable/ic_upload_image" />
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginStart="14dp"
             android:layout_weight="1"
+            android:gravity="center_vertical"
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 android:text="이미지 업로드"
                 android:textColor="#111111"
                 android:textSize="15sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="앨범에서 영양성분표 이미지를 선택합니다."
-                android:textColor="#777777"
-                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/layoutUploadFile"
         android:layout_width="0dp"
-        android:layout_height="64dp"
+        android:layout_height="80dp"
         android:layout_marginTop="12dp"
         android:background="@drawable/bg_input_box"
+        android:backgroundTint="#FFFFFF"
+        android:elevation="0dp"
         android:clickable="true"
         android:focusable="true"
+        android:foreground="@drawable/bg_upload_option_border"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="16dp"
@@ -161,33 +129,25 @@
         <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/bg_camera_circle"
             android:contentDescription="파일 업로드"
-            android:padding="9dp"
-            android:src="@drawable/ic_home_plus" />
+            android:src="@drawable/ic_upload_file" />
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginStart="14dp"
             android:layout_weight="1"
+            android:gravity="center_vertical"
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 android:text="파일 업로드"
                 android:textColor="#111111"
                 android:textSize="15sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="문서나 파일 형태의 식품 정보를 선택합니다."
-                android:textColor="#777777"
-                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 
