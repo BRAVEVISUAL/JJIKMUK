@@ -1,9 +1,7 @@
 package com.coworker.jjikmuk.feature.history.chat
 
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Rect
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -74,12 +72,9 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
         val directionLeft = -1
         val directionRight = 1
         val actionWidth = dp(80)
-        val iconSize = dp(32)
         val openThreshold = actionWidth * 0.95f
         val touchSlop = ViewConfiguration.get(requireContext()).scaledTouchSlop
         val autoCloseHandler = Handler(Looper.getMainLooper())
-        val pinBackground = ColorDrawable(Color.parseColor("#FFD66B"))
-        val deleteBackground = ColorDrawable(Color.parseColor("#FF6262"))
         val pinIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_swipe_action_left)
         val deleteIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_swipe_action_right)
 
@@ -103,53 +98,31 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
             val actionDistance = min(actionWidth, dragDistance)
             if (actionDistance <= 0) return
 
-            val itemCenterY = itemView.top + itemView.height / 2
-            val iconTop = itemCenterY - iconSize / 2
-            val iconBottom = iconTop + iconSize
-
             if (direction == directionRight) {
                 val actionLeft = itemView.left
                 val actionRight = itemView.left + actionDistance
-                val iconLeft = itemView.left + (actionWidth - iconSize) / 2
-
-                pinBackground.setBounds(
-                    actionLeft,
-                    itemView.top,
-                    actionRight,
-                    itemView.bottom
-                )
-                pinBackground.draw(canvas)
 
                 canvas.save()
                 canvas.clipRect(actionLeft, itemView.top, actionRight, itemView.bottom)
                 pinIcon?.setBounds(
-                    iconLeft,
-                    iconTop,
-                    iconLeft + iconSize,
-                    iconBottom
+                    itemView.left,
+                    itemView.top,
+                    itemView.left + actionWidth,
+                    itemView.bottom
                 )
                 pinIcon?.draw(canvas)
                 canvas.restore()
             } else if (direction == directionLeft) {
                 val actionLeft = itemView.right - actionDistance
                 val actionRight = itemView.right
-                val iconLeft = itemView.right - (actionWidth + iconSize) / 2
-
-                deleteBackground.setBounds(
-                    actionLeft,
-                    itemView.top,
-                    actionRight,
-                    itemView.bottom
-                )
-                deleteBackground.draw(canvas)
 
                 canvas.save()
                 canvas.clipRect(actionLeft, itemView.top, actionRight, itemView.bottom)
                 deleteIcon?.setBounds(
-                    iconLeft,
-                    iconTop,
-                    iconLeft + iconSize,
-                    iconBottom
+                    itemView.right - actionWidth,
+                    itemView.top,
+                    itemView.right,
+                    itemView.bottom
                 )
                 deleteIcon?.draw(canvas)
                 canvas.restore()
