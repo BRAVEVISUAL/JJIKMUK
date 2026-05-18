@@ -82,8 +82,9 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.bindingAdapterPosition
-                val history = chatHistoryAdapter.currentList.getOrNull(position)
+                if (position == RecyclerView.NO_POSITION) return
 
+                val history = chatHistoryAdapter.currentList.getOrNull(position)
                 if (history == null) {
                     chatHistoryAdapter.notifyItemChanged(position)
                     return
