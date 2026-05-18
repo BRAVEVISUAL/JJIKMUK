@@ -9,6 +9,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
@@ -19,7 +20,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
@@ -69,39 +69,27 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
     }
 
     private fun setupSwipeActions(rvChatHistories: RecyclerView) {
+        val directionLeft = -1
+        val directionRight = 1
         val actionWidth = dp(72)
         val iconSize = dp(24)
         val openThreshold = actionWidth * 0.95f
+        val touchSlop = ViewConfiguration.get(requireContext()).scaledTouchSlop
         val pinBackground = ColorDrawable(Color.parseColor("#FFD66B"))
         val deleteBackground = ColorDrawable(Color.parseColor("#FF6262"))
         val pinIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_swipe_action_left)
         val deleteIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_swipe_action_right)
+
         var openedPosition = RecyclerView.NO_POSITION
         var openedDirection = 0
-        var maxSwipePosition = RecyclerView.NO_POSITION
-        var maxSwipeDirection = 0
-        var maxSwipeDistance = 0f
-
-        fun closeOpenedItem() {
-            if (openedPosition == RecyclerView.NO_POSITION) return
-
-            rvChatHistories.findViewHolderForAdapterPosition(openedPosition)
-                ?.itemView
-                ?.animate()
-                ?.translationX(0f)
-                ?.setDuration(120L)
-                ?.start()
-
-            openedPosition = RecyclerView.NO_POSITION
-            openedDirection = 0
-            rvChatHistories.invalidateItemDecorations()
-        }
-
-        fun resetSwipeTracking() {
-            maxSwipePosition = RecyclerView.NO_POSITION
-            maxSwipeDirection = 0
-            maxSwipeDistance = 0f
-        }
+        var activePosition = RecyclerView.NO_POSITION
+        var activeView: View? = null
+        var downX = 0f
+        var downY = 0f
+        var startTranslationX = 0f
+        var activeDistance = 0
+        var activeDirection = 0
+        var isDragging = false
 
         fun drawAction(
             canvas: Canvas,
@@ -113,7 +101,7 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
             val iconBottom = iconTop + iconSize
             val actionDistance = min(actionWidth, dragDistance)
 
-            if (direction == ItemTouchHelper.RIGHT) {
+            if (direction == directionRight) {
                 pinBackground.setBounds(
                     itemView.left,
                     itemView.top,
@@ -130,7 +118,7 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
                     iconBottom
                 )
                 pinIcon?.draw(canvas)
-            } else if (direction == ItemTouchHelper.LEFT) {
+            } else if (direction == directionLeft) {
                 deleteBackground.setBounds(
                     itemView.right - actionDistance,
                     itemView.top,
@@ -150,159 +138,164 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
             }
         }
 
+        fun closeOpenedItem(animate: Boolean = true) {
+            if (openedPosition == RecyclerView.NO_POSITION) return
+
+            val openedView = rvChatHistories.findViewHolderForAdapterPosition(openedPosition)?.itemView
+            if (animate) {
+                openedView?.animate()
+                    ?.translationX(0f)
+                    ?.setDuration(120L)
+                    ?.start()
+            } else {
+                openedView?.translationX = 0f
+            }
+
+            openedPosition = RecyclerView.NO_POSITION
+            openedDirection = 0
+            rvChatHistories.invalidateItemDecorations()
+        }
+
+        fun actionRect(itemView: View, direction: Int): Rect {
+            return if (direction == directionRight) {
+                Rect(itemView.left, itemView.top, itemView.left + actionWidth, itemView.bottom)
+            } else {
+                Rect(itemView.right - actionWidth, itemView.top, itemView.right, itemView.bottom)
+            }
+        }
+
+        fun clearActiveDrag() {
+            activePosition = RecyclerView.NO_POSITION
+            activeView = null
+            activeDistance = 0
+            activeDirection = 0
+            isDragging = false
+        }
+
         rvChatHistories.addItemDecoration(object : RecyclerView.ItemDecoration() {
             override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
-                if (openedPosition == RecyclerView.NO_POSITION || openedDirection == 0) return
+                if (openedPosition != RecyclerView.NO_POSITION && openedDirection != 0) {
+                    parent.findViewHolderForAdapterPosition(openedPosition)?.itemView?.let { itemView ->
+                        drawAction(c, itemView, openedDirection)
+                    }
+                }
 
-                val viewHolder = parent.findViewHolderForAdapterPosition(openedPosition) ?: return
-                drawAction(c, viewHolder.itemView, openedDirection)
+                if (isDragging && activeView != null && activeDirection != 0) {
+                    drawAction(c, activeView ?: return, activeDirection, activeDistance)
+                }
             }
         })
 
         rvChatHistories.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
             override fun onInterceptTouchEvent(rv: RecyclerView, event: MotionEvent): Boolean {
-                if (openedPosition == RecyclerView.NO_POSITION) return false
-                if (event.action != MotionEvent.ACTION_UP) return false
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        downX = event.x
+                        downY = event.y
+                        isDragging = false
+                        activeDistance = 0
+                        activeDirection = 0
 
-                val viewHolder = rv.findViewHolderForAdapterPosition(openedPosition) ?: run {
-                    closeOpenedItem()
-                    return false
-                }
+                        if (openedPosition != RecyclerView.NO_POSITION) {
+                            val openedHolder = rv.findViewHolderForAdapterPosition(openedPosition)
+                            val openedView = openedHolder?.itemView
+                            val history = chatHistoryAdapter.currentList.getOrNull(openedPosition)
 
-                val itemView = viewHolder.itemView
-                val actionRect = if (openedDirection == ItemTouchHelper.RIGHT) {
-                    Rect(itemView.left, itemView.top, itemView.left + actionWidth, itemView.bottom)
-                } else {
-                    Rect(itemView.right - actionWidth, itemView.top, itemView.right, itemView.bottom)
-                }
+                            if (
+                                openedView != null &&
+                                history != null &&
+                                actionRect(openedView, openedDirection).contains(event.x.toInt(), event.y.toInt())
+                            ) {
+                                when (openedDirection) {
+                                    directionRight -> viewModel.pinChatHistory(history.id)
+                                    directionLeft -> viewModel.deleteChatHistory(history.id)
+                                }
+                                openedPosition = RecyclerView.NO_POSITION
+                                openedDirection = 0
+                                rv.invalidateItemDecorations()
+                                return true
+                            }
 
-                val tappedAction = actionRect.contains(event.x.toInt(), event.y.toInt())
-                val history = chatHistoryAdapter.currentList.getOrNull(openedPosition)
+                            closeOpenedItem()
+                            return true
+                        }
 
-                if (tappedAction && history != null) {
-                    when (openedDirection) {
-                        ItemTouchHelper.RIGHT -> viewModel.pinChatHistory(history.id)
-                        ItemTouchHelper.LEFT -> viewModel.deleteChatHistory(history.id)
+                        val child = rv.findChildViewUnder(event.x, event.y) ?: return false
+                        activeView = child
+                        activePosition = rv.getChildAdapterPosition(child)
+                        startTranslationX = child.translationX
+                        return false
                     }
-                    openedPosition = RecyclerView.NO_POSITION
-                    openedDirection = 0
-                    return true
+
+                    MotionEvent.ACTION_MOVE -> {
+                        val targetView = activeView ?: return false
+                        if (activePosition == RecyclerView.NO_POSITION) return false
+
+                        val dx = event.x - downX
+                        val dy = event.y - downY
+                        if (abs(dx) <= touchSlop || abs(dx) <= abs(dy)) return false
+
+                        isDragging = true
+                        rv.parent?.requestDisallowInterceptTouchEvent(true)
+                        targetView.animate().cancel()
+                        return true
+                    }
                 }
 
-                closeOpenedItem()
                 return false
             }
+
+            override fun onTouchEvent(rv: RecyclerView, event: MotionEvent) {
+                val targetView = activeView ?: return
+                if (activePosition == RecyclerView.NO_POSITION) return
+
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_MOVE -> {
+                        val dx = event.x - downX + startTranslationX
+                        val clampedDx = max(-actionWidth.toFloat(), min(actionWidth.toFloat(), dx))
+                        targetView.translationX = clampedDx
+
+                        activeDirection = when {
+                            clampedDx > 0f -> directionRight
+                            clampedDx < 0f -> directionLeft
+                            else -> 0
+                        }
+                        activeDistance = abs(clampedDx).toInt()
+                        rv.invalidateItemDecorations()
+                    }
+
+                    MotionEvent.ACTION_UP,
+                    MotionEvent.ACTION_CANCEL -> {
+                        val currentDirection = activeDirection
+                        val currentDistance = activeDistance
+                        val currentPosition = activePosition
+
+                        if (currentDirection != 0 && currentDistance >= openThreshold) {
+                            openedPosition = currentPosition
+                            openedDirection = currentDirection
+                            targetView.translationX = if (currentDirection == directionRight) {
+                                actionWidth.toFloat()
+                            } else {
+                                -actionWidth.toFloat()
+                            }
+                            rv.invalidateItemDecorations()
+                        } else {
+                            targetView.animate()
+                                .translationX(0f)
+                                .setDuration(120L)
+                                .start()
+                            if (openedPosition == currentPosition) {
+                                openedPosition = RecyclerView.NO_POSITION
+                                openedDirection = 0
+                            }
+                            rv.invalidateItemDecorations()
+                        }
+
+                        clearActiveDrag()
+                    }
+                }
+            }
         })
-
-        val swipeCallback = object : ItemTouchHelper.SimpleCallback(
-            0,
-            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
-        ) {
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean = false
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) = Unit
-
-            override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder): Float {
-                return Float.MAX_VALUE
-            }
-
-            override fun getSwipeEscapeVelocity(defaultValue: Float): Float {
-                return Float.MAX_VALUE
-            }
-
-            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
-                val position = viewHolder.bindingAdapterPosition
-                if (position == RecyclerView.NO_POSITION) {
-                    resetSwipeTracking()
-                    return
-                }
-
-                viewHolder.itemView.animate().cancel()
-
-                if (
-                    maxSwipePosition == position &&
-                    maxSwipeDirection != 0 &&
-                    maxSwipeDistance >= openThreshold
-                ) {
-                    if (openedPosition != RecyclerView.NO_POSITION && openedPosition != position) {
-                        recyclerView.findViewHolderForAdapterPosition(openedPosition)
-                            ?.itemView
-                            ?.translationX = 0f
-                    }
-
-                    openedPosition = position
-                    openedDirection = maxSwipeDirection
-                    viewHolder.itemView.translationX = if (openedDirection == ItemTouchHelper.RIGHT) {
-                        actionWidth.toFloat()
-                    } else {
-                        -actionWidth.toFloat()
-                    }
-                    recyclerView.invalidateItemDecorations()
-                } else {
-                    if (openedPosition == position) {
-                        openedPosition = RecyclerView.NO_POSITION
-                        openedDirection = 0
-                    }
-                    viewHolder.itemView.animate()
-                        .translationX(0f)
-                        .setDuration(120L)
-                        .start()
-                    recyclerView.invalidateItemDecorations()
-                }
-
-                resetSwipeTracking()
-            }
-
-            override fun onChildDraw(
-                c: Canvas,
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                dX: Float,
-                dY: Float,
-                actionState: Int,
-                isCurrentlyActive: Boolean
-            ) {
-                val itemView = viewHolder.itemView
-                val position = viewHolder.bindingAdapterPosition
-                val clampedDx = max(-actionWidth.toFloat(), min(actionWidth.toFloat(), dX))
-                val direction = when {
-                    clampedDx > 0f -> ItemTouchHelper.RIGHT
-                    clampedDx < 0f -> ItemTouchHelper.LEFT
-                    else -> 0
-                }
-                val distance = abs(clampedDx)
-
-                if (isCurrentlyActive && position != RecyclerView.NO_POSITION && direction != 0) {
-                    if (maxSwipePosition != position || maxSwipeDirection != direction) {
-                        maxSwipePosition = position
-                        maxSwipeDirection = direction
-                        maxSwipeDistance = distance
-                    } else if (distance > maxSwipeDistance) {
-                        maxSwipeDistance = distance
-                    }
-                }
-
-                if (direction != 0) {
-                    drawAction(c, itemView, direction, distance.toInt())
-                }
-
-                super.onChildDraw(
-                    c,
-                    recyclerView,
-                    viewHolder,
-                    clampedDx,
-                    dY,
-                    actionState,
-                    isCurrentlyActive
-                )
-            }
-        }
-
-        ItemTouchHelper(swipeCallback).attachToRecyclerView(rvChatHistories)
     }
 
     private fun setupClickListeners(view: View) {
