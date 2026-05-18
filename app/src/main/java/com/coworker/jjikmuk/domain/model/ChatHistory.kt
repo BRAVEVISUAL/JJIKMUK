@@ -4,5 +4,6 @@ data class ChatHistory(
     val id: Long,
     val title: String,
     val subtitle: String,
-    val lastMessageTime: String
+    val lastMessageTime: String,
+    val isPinned: Boolean = false
 )
