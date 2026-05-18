@@ -73,8 +73,8 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
     private fun setupSwipeActions(rvChatHistories: RecyclerView) {
         val directionLeft = -1
         val directionRight = 1
-        val actionWidth = dp(72)
-        val iconSize = dp(24)
+        val actionWidth = dp(80)
+        val iconSize = dp(32)
         val openThreshold = actionWidth * 0.95f
         val touchSlop = ViewConfiguration.get(requireContext()).scaledTouchSlop
         val autoCloseHandler = Handler(Looper.getMainLooper())
@@ -100,20 +100,28 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
             direction: Int,
             dragDistance: Int = actionWidth
         ) {
-            val iconTop = itemView.top + (itemView.height - iconSize) / 2
-            val iconBottom = iconTop + iconSize
             val actionDistance = min(actionWidth, dragDistance)
+            if (actionDistance <= 0) return
+
+            val itemCenterY = itemView.top + itemView.height / 2
+            val iconTop = itemCenterY - iconSize / 2
+            val iconBottom = iconTop + iconSize
 
             if (direction == directionRight) {
+                val actionLeft = itemView.left
+                val actionRight = itemView.left + actionDistance
+                val iconLeft = itemView.left + (actionWidth - iconSize) / 2
+
                 pinBackground.setBounds(
-                    itemView.left,
+                    actionLeft,
                     itemView.top,
-                    itemView.left + actionDistance,
+                    actionRight,
                     itemView.bottom
                 )
                 pinBackground.draw(canvas)
 
-                val iconLeft = itemView.left + (actionWidth - iconSize) / 2
+                canvas.save()
+                canvas.clipRect(actionLeft, itemView.top, actionRight, itemView.bottom)
                 pinIcon?.setBounds(
                     iconLeft,
                     iconTop,
@@ -121,16 +129,22 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
                     iconBottom
                 )
                 pinIcon?.draw(canvas)
+                canvas.restore()
             } else if (direction == directionLeft) {
+                val actionLeft = itemView.right - actionDistance
+                val actionRight = itemView.right
+                val iconLeft = itemView.right - (actionWidth + iconSize) / 2
+
                 deleteBackground.setBounds(
-                    itemView.right - actionDistance,
+                    actionLeft,
                     itemView.top,
-                    itemView.right,
+                    actionRight,
                     itemView.bottom
                 )
                 deleteBackground.draw(canvas)
 
-                val iconLeft = itemView.right - (actionWidth + iconSize) / 2
+                canvas.save()
+                canvas.clipRect(actionLeft, itemView.top, actionRight, itemView.bottom)
                 deleteIcon?.setBounds(
                     iconLeft,
                     iconTop,
@@ -138,6 +152,7 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
                     iconBottom
                 )
                 deleteIcon?.draw(canvas)
+                canvas.restore()
             }
         }
 
