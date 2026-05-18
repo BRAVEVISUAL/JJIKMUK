@@ -5,6 +5,8 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.MotionEvent
@@ -75,6 +77,7 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
         val iconSize = dp(24)
         val openThreshold = actionWidth * 0.95f
         val touchSlop = ViewConfiguration.get(requireContext()).scaledTouchSlop
+        val autoCloseHandler = Handler(Looper.getMainLooper())
         val pinBackground = ColorDrawable(Color.parseColor("#FFD66B"))
         val deleteBackground = ColorDrawable(Color.parseColor("#FF6262"))
         val pinIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_swipe_action_left)
@@ -139,6 +142,8 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
         }
 
         fun closeOpenedItem(animate: Boolean = true) {
+            autoCloseHandler.removeCallbacksAndMessages(null)
+
             if (openedPosition == RecyclerView.NO_POSITION) return
 
             val openedView = rvChatHistories.findViewHolderForAdapterPosition(openedPosition)?.itemView
@@ -154,6 +159,13 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
             openedPosition = RecyclerView.NO_POSITION
             openedDirection = 0
             rvChatHistories.invalidateItemDecorations()
+        }
+
+        fun scheduleAutoClose() {
+            autoCloseHandler.removeCallbacksAndMessages(null)
+            autoCloseHandler.postDelayed({
+                closeOpenedItem()
+            }, 2_000L)
         }
 
         fun actionRect(itemView: View, direction: Int): Rect {
@@ -190,6 +202,7 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
             override fun onInterceptTouchEvent(rv: RecyclerView, event: MotionEvent): Boolean {
                 when (event.actionMasked) {
                     MotionEvent.ACTION_DOWN -> {
+                        autoCloseHandler.removeCallbacksAndMessages(null)
                         downX = event.x
                         downY = event.y
                         isDragging = false
@@ -279,6 +292,7 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
                                 -actionWidth.toFloat()
                             }
                             rv.invalidateItemDecorations()
+                            scheduleAutoClose()
                         } else {
                             targetView.animate()
                                 .translationX(0f)
