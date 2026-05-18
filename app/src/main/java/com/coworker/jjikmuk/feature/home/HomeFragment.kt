@@ -28,6 +28,7 @@ import com.coworker.jjikmuk.feature.chat.ChatFragment
 import com.coworker.jjikmuk.core.navigation.BottomNavController
 import com.coworker.jjikmuk.domain.model.UserProfile
 import com.coworker.jjikmuk.domain.model.UploadOption
+import com.coworker.jjikmuk.feature.history.chat.ChatHistoryFragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.launch
 
@@ -45,6 +46,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         layoutSelectedProfiles = view.findViewById(R.id.layoutSelectedProfiles)
 
         etHomeMessage = view.findViewById(R.id.etHomeMessage)
+        val btnMenu = view.findViewById<ImageButton>(R.id.btnMenu)
         val btnPlus = view.findViewById<ImageButton>(R.id.btnPlus)
         val btnSend = view.findViewById<ImageButton>(R.id.btnSend)
 
@@ -55,6 +57,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         layoutSelectedProfiles.setOnClickListener {
             showScanTargetPopup(layoutSelectedProfiles)
+        }
+
+        btnMenu.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.mainContainer, ChatHistoryFragment())
+                .addToBackStack(null)
+                .commit()
         }
 
         btnPlus.setOnClickListener {
