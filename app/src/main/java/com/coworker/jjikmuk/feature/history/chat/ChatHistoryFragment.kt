@@ -71,6 +71,7 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
     private fun setupSwipeActions(rvChatHistories: RecyclerView) {
         val actionWidth = dp(72)
         val iconSize = dp(24)
+        val openThreshold = actionWidth * 0.95f
         val pinBackground = ColorDrawable(Color.parseColor("#FFD66B"))
         val deleteBackground = ColorDrawable(Color.parseColor("#FF6262"))
         val pinIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_swipe_action_left)
@@ -221,18 +222,26 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
 
                     openedPosition = position
                     openedDirection = pendingOpenDirection
-                    viewHolder.itemView.translationX = if (openedDirection == ItemTouchHelper.RIGHT) {
-                        actionWidth.toFloat()
-                    } else {
-                        -actionWidth.toFloat()
-                    }
+                    viewHolder.itemView.animate()
+                        .translationX(
+                            if (openedDirection == ItemTouchHelper.RIGHT) {
+                                actionWidth.toFloat()
+                            } else {
+                                -actionWidth.toFloat()
+                            }
+                        )
+                        .setDuration(120L)
+                        .start()
                     recyclerView.invalidateItemDecorations()
                 } else {
                     if (openedPosition == position) {
                         openedPosition = RecyclerView.NO_POSITION
                         openedDirection = 0
                     }
-                    viewHolder.itemView.translationX = 0f
+                    viewHolder.itemView.animate()
+                        .translationX(0f)
+                        .setDuration(120L)
+                        .start()
                     recyclerView.invalidateItemDecorations()
                 }
 
@@ -259,15 +268,16 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
                 }
 
                 if (isCurrentlyActive && position != RecyclerView.NO_POSITION) {
-                    pendingOpenPosition = if (abs(clampedDx) >= actionWidth / 2f) {
+                    val shouldOpen = abs(clampedDx) >= openThreshold
+                    pendingOpenPosition = if (shouldOpen) {
                         position
                     } else {
                         RecyclerView.NO_POSITION
                     }
-                    pendingOpenDirection = if (pendingOpenPosition == RecyclerView.NO_POSITION) {
-                        0
-                    } else {
+                    pendingOpenDirection = if (shouldOpen) {
                         direction
+                    } else {
+                        0
                     }
                 }
 
