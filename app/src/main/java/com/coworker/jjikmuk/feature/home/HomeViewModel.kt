@@ -2,46 +2,41 @@ package com.coworker.jjikmuk.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.coworker.jjikmuk.R
-import com.coworker.jjikmuk.domain.model.UserProfile
 import com.coworker.jjikmuk.domain.model.UploadOption
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.coworker.jjikmuk.domain.repository.UserProfileRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class HomeViewModel : ViewModel() {
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    userProfileRepository: UserProfileRepository
+) : ViewModel() {
 
-    private val initialProfiles = listOf(
-        UserProfile(
-            id = "me",
-            name = "나",
-            imageResId = R.drawable.ic_launcher_foreground,
-            isSelected = true
-        ),
-        UserProfile(
-            id = "coworker",
-            name = "코워커",
-            imageResId = R.drawable.ic_launcher_foreground,
-            isSelected = false
-        ),
-        UserProfile(
-            id = "family_1",
-            name = "가족 1",
-            imageResId = R.drawable.ic_launcher_foreground,
-            isSelected = false
-        )
-    )
+    private val initialProfiles: List<HomeProfileUiModel> =
+        userProfileRepository.getProfiles()
+            .mapIndexed { index, profile ->
+                profile.toHomeProfileUiModel(
+                    isSelected = index == 0
+                )
+            }
 
     private val _uiState = MutableStateFlow(
         HomeUiState(
             profiles = initialProfiles,
-            selectedProfiles = initialProfiles.filter { profile -> profile.isSelected }
+            selectedProfiles = initialProfiles.filter { profile ->
+                profile.isSelected
+            }
         )
     )
-    val uiState: StateFlow<HomeUiState> = _uiState
+
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     private val _event = MutableSharedFlow<HomeEvent>()
     val event: SharedFlow<HomeEvent> = _event
@@ -64,7 +59,9 @@ class HomeViewModel : ViewModel() {
 
             state.copy(
                 profiles = updatedProfiles,
-                selectedProfiles = updatedProfiles.filter { profile -> profile.isSelected }
+                selectedProfiles = updatedProfiles.filter { profile ->
+                    profile.isSelected
+                }
             )
         }
     }

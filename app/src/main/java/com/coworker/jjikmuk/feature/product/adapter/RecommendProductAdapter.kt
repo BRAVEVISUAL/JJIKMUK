@@ -9,28 +9,37 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
-import com.coworker.jjikmuk.domain.model.Product
+import com.coworker.jjikmuk.feature.product.model.ProductUiModel
 
 class RecommendProductAdapter(
-    private val onItemClick: (Product) -> Unit
-) : ListAdapter<Product, RecommendProductAdapter.RecommendProductViewHolder>(
+    private val onProductClick: (ProductUiModel) -> Unit
+) : ListAdapter<ProductUiModel, RecommendProductAdapter.RecommendProductViewHolder>(
     RecommendProductDiffCallback()
 ) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecommendProductViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): RecommendProductViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_recommend_product, parent, false)
 
-        return RecommendProductViewHolder(view, onItemClick)
+        return RecommendProductViewHolder(
+            itemView = view,
+            onProductClick = onProductClick
+        )
     }
 
-    override fun onBindViewHolder(holder: RecommendProductViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: RecommendProductViewHolder,
+        position: Int
+    ) {
         holder.bind(getItem(position))
     }
 
     class RecommendProductViewHolder(
         itemView: View,
-        private val onItemClick: (Product) -> Unit
+        private val onProductClick: (ProductUiModel) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
 
         private val tvProductCategory: TextView =
@@ -48,7 +57,7 @@ class RecommendProductAdapter(
         private val ivProductImage: ImageView =
             itemView.findViewById(R.id.ivProductImage)
 
-        fun bind(product: Product) {
+        fun bind(product: ProductUiModel) {
             tvProductCategory.text = product.category
             tvProductName.text = product.name
             ivProductImage.setImageResource(product.imageResId)
@@ -71,22 +80,22 @@ class RecommendProductAdapter(
             }
 
             itemView.setOnClickListener {
-                onItemClick(product)
+                onProductClick(product)
             }
         }
     }
 
-    private class RecommendProductDiffCallback : DiffUtil.ItemCallback<Product>() {
+    private class RecommendProductDiffCallback : DiffUtil.ItemCallback<ProductUiModel>() {
         override fun areItemsTheSame(
-            oldItem: Product,
-            newItem: Product
+            oldItem: ProductUiModel,
+            newItem: ProductUiModel
         ): Boolean {
             return oldItem.id == newItem.id
         }
 
         override fun areContentsTheSame(
-            oldItem: Product,
-            newItem: Product
+            oldItem: ProductUiModel,
+            newItem: ProductUiModel
         ): Boolean {
             return oldItem == newItem
         }

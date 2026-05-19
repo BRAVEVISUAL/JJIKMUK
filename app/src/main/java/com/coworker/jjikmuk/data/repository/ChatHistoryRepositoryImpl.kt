@@ -2,8 +2,9 @@ package com.coworker.jjikmuk.data.repository
 
 import com.coworker.jjikmuk.domain.model.ChatHistory
 import com.coworker.jjikmuk.domain.repository.ChatHistoryRepository
+import javax.inject.Inject
 
-class ChatHistoryRepositoryImpl : ChatHistoryRepository {
+class ChatHistoryRepositoryImpl @Inject constructor() : ChatHistoryRepository {
 
     override fun getChatHistories(): List<ChatHistory> {
         return listOf(
