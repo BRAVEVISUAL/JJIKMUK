@@ -2,7 +2,7 @@ package com.coworker.jjikmuk.data.repository
 
 import com.coworker.jjikmuk.domain.model.Product
 import com.coworker.jjikmuk.domain.repository.ProductRepository
-import com.coworker.jjikmuk.feature.product.dummy.ProductDummyData
+import com.coworker.jjikmuk.data.local.dummy.ProductDummyData
 
 class ProductRepositoryImpl : ProductRepository {
 

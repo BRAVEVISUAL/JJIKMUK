@@ -5,7 +5,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.coworker.jjikmuk.domain.model.Product
-import com.coworker.jjikmuk.feature.product.dummy.ProductDummyData
+import com.coworker.jjikmuk.data.local.dummy.ProductDummyData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map

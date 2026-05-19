@@ -1,4 +1,4 @@
-package com.coworker.jjikmuk.feature.product.dummy
+package com.coworker.jjikmuk.data.local.dummy
 
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.domain.model.Product
