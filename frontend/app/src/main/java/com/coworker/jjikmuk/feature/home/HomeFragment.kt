@@ -27,7 +27,9 @@ import com.coworker.jjikmuk.feature.chat.ChatFragment
 import com.coworker.jjikmuk.core.navigation.BottomNavController
 import com.coworker.jjikmuk.domain.model.UserProfile
 import kotlinx.coroutines.launch
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val viewModel: HomeViewModel by viewModels()
