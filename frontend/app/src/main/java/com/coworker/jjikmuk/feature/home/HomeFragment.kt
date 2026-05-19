@@ -3,6 +3,8 @@ package com.coworker.jjikmuk.feature.home
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -16,68 +18,89 @@ import android.widget.Switch
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.chat.ChatFragment
+import com.coworker.jjikmuk.feature.navigation.BottomNavController
+import kotlinx.coroutines.launch
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
-    private data class TempProfile(
-        val name: String,
-        val relation: String,
-        val imageResId: Int,
-        var isSelected: Boolean
-    )
-
-    private val tempProfiles = mutableListOf(
-        TempProfile(
-            name = "코워커",
-            relation = "나",
-            imageResId = R.drawable.ic_launcher_foreground,
-            isSelected = true
-        ),
-        TempProfile(
-            name = "김철수",
-            relation = "배우자",
-            imageResId = R.drawable.ic_launcher_foreground,
-            isSelected = false
-        ),
-        TempProfile(
-            name = "김아기",
-            relation = "자녀",
-            imageResId = R.drawable.ic_launcher_foreground,
-            isSelected = false
-        )
-    )
+    private val viewModel: HomeViewModel by viewModels()
 
     private lateinit var layoutSelectedProfiles: FrameLayout
+    private lateinit var etHomeMessage: EditText
+    private var currentProfiles: List<HomeProfileUiModel> = emptyList()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         layoutSelectedProfiles = view.findViewById(R.id.layoutSelectedProfiles)
 
-        val etHomeMessage = view.findViewById<EditText>(R.id.etHomeMessage)
+        etHomeMessage = view.findViewById(R.id.etHomeMessage)
         val btnSend = view.findViewById<ImageButton>(R.id.btnSend)
 
-        updateSelectedProfileImages()
+        observeViewModel()
+        setupInputWatcher()
+
+        BottomNavController.bind(view, parentFragmentManager, requireContext())
 
         layoutSelectedProfiles.setOnClickListener {
             showScanTargetPopup(layoutSelectedProfiles)
         }
 
         btnSend.setOnClickListener {
-            val message = etHomeMessage.text.toString().trim()
+            val message = viewModel.getCurrentMessage()
 
             if (message.isEmpty()) return@setOnClickListener
 
             etHomeMessage.text.clear()
             etHomeMessage.clearFocus()
+            viewModel.clearInputMessage()
 
             parentFragmentManager.beginTransaction()
                 .replace(R.id.mainContainer, ChatFragment.newInstance(message))
                 .addToBackStack(null)
                 .commit()
         }
+    }
+
+    private fun observeViewModel() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    currentProfiles = state.profiles
+                    updateSelectedProfileImages(state.selectedProfiles)
+                }
+            }
+        }
+    }
+
+    private fun setupInputWatcher() {
+        etHomeMessage.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) = Unit
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
+                viewModel.updateInputMessage(s?.toString().orEmpty())
+            }
+
+            override fun afterTextChanged(s: Editable?) = Unit
+        })
     }
 
     private fun showScanTargetPopup(anchorView: View) {
@@ -90,7 +113,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         layoutScanProfileList.removeAllViews()
 
-        tempProfiles.forEach { profile ->
+        currentProfiles.forEach { profile ->
             val itemView = layoutInflater.inflate(
                 R.layout.item_scan_profile,
                 layoutScanProfileList,
@@ -104,12 +127,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
             ivProfileImage.setImageResource(profile.imageResId)
             tvProfileName.text = profile.name
-            tvProfileRelation.text = profile.relation
+            tvProfileRelation.text = profile.relationText
             switchProfile.isChecked = profile.isSelected
 
-            switchProfile.setOnCheckedChangeListener { _, isChecked ->
-                profile.isSelected = isChecked
-                updateSelectedProfileImages()
+            switchProfile.setOnCheckedChangeListener { _, _ ->
+                viewModel.toggleProfile(profile.id)
             }
 
             itemView.setOnClickListener {
@@ -142,17 +164,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         )
     }
 
-    private fun updateSelectedProfileImages() {
+    private fun updateSelectedProfileImages(selectedProfiles: List<HomeProfileUiModel>) {
         if (!::layoutSelectedProfiles.isInitialized) return
 
         layoutSelectedProfiles.removeAllViews()
 
-        val selectedProfiles = tempProfiles
-            .filter { it.isSelected }
-            .take(5)
-
-        val myProfile = selectedProfiles.firstOrNull { it.relation == "나" }
-        val otherProfiles = selectedProfiles.filterNot { it.relation == "나" }
+        val displayProfiles = selectedProfiles.take(5)
+        val myProfile = displayProfiles.firstOrNull { profile -> profile.id == "me" }
+        val otherProfiles = displayProfiles.filterNot { profile -> profile.id == "me" }
 
         // FrameLayout은 나중에 addView 된 View가 더 위에 그려집니다.
         // 따라서 다른 가족 프로필을 먼저 그리고, 마지막에 '나' 프로필을 추가해서
@@ -176,7 +195,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun addSelectedProfileImage(
-        profile: TempProfile,
+        profile: HomeProfileUiModel,
         rightMarginDp: Int
     ) {
         val imageView = ImageView(requireContext()).apply {
