@@ -1,27 +1,23 @@
 package com.coworker.jjikmuk.feature.chat
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.coworker.jjikmuk.data.repository.ChatRepositoryImpl
 import com.coworker.jjikmuk.domain.model.ChatMessage
-import com.coworker.jjikmuk.domain.model.UploadOption
 import com.coworker.jjikmuk.domain.repository.ChatRepository
+import com.coworker.jjikmuk.feature.product.mapper.toUiModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
-class ChatViewModel : ViewModel() {
-
-    private val chatRepository: ChatRepository = ChatRepositoryImpl()
+@HiltViewModel
+class ChatViewModel @Inject constructor(
+    private val chatRepository: ChatRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
-    val uiState: StateFlow<ChatUiState> = _uiState
-
-    private val _uploadOptionEvent = MutableSharedFlow<UploadOption>()
-    val uploadOptionEvent: SharedFlow<UploadOption> = _uploadOptionEvent
+    val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
     private var nextMessageId: Long = 0L
 
@@ -30,7 +26,7 @@ class ChatViewModel : ViewModel() {
 
         val userMessage = createUserMessage(initialMessage)
         val botMessage = createBotMessage(chatRepository.makeDummyResponse(initialMessage))
-        val recommendProducts = chatRepository.getRecommendProducts(limit = 2)
+        val recommendProducts = getRecommendProductUiModels()
 
         _uiState.update { state ->
             state.copy(
@@ -50,7 +46,7 @@ class ChatViewModel : ViewModel() {
 
         val userMessage = createUserMessage(trimmedMessage)
         val botMessage = createBotMessage(chatRepository.makeDummyResponse(trimmedMessage))
-        val recommendProducts = chatRepository.getRecommendProducts(limit = 2)
+        val recommendProducts = getRecommendProductUiModels()
 
         _uiState.update { state ->
             state.copy(
@@ -63,17 +59,17 @@ class ChatViewModel : ViewModel() {
         }
     }
 
-    fun onUploadOptionSelected(option: UploadOption) {
-        viewModelScope.launch {
-            _uploadOptionEvent.emit(option)
-        }
-    }
-
     fun onRecommendSheetShown() {
         _uiState.update { state ->
             state.copy(shouldShowRecommendSheet = false)
         }
     }
+
+    private fun getRecommendProductUiModels() =
+        chatRepository.getRecommendProducts(limit = 2)
+            .map { product ->
+                product.toUiModel()
+            }
 
     private fun createUserMessage(message: String): ChatMessage {
         return ChatMessage(

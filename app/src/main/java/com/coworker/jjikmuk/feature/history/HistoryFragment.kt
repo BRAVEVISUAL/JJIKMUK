@@ -9,16 +9,19 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
-import com.coworker.jjikmuk.core.navigation.BottomNavController
+import com.coworker.jjikmuk.feature.navigation.BottomNavController
 import com.coworker.jjikmuk.feature.product.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
+import com.coworker.jjikmuk.feature.product.mapper.toUiModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class HistoryFragment : Fragment() {
 
     private val viewModel: HistoryViewModel by viewModels()
@@ -53,6 +56,7 @@ class HistoryFragment : Fragment() {
 
     private fun initViews(view: View) {
         val btnHistoryBack = view.findViewById<ImageButton>(R.id.btnHistoryBack)
+
         rvFavoriteProducts = view.findViewById(R.id.rvFavoriteProducts)
         tvEmptyFavoriteProducts = view.findViewById(R.id.tvEmptyFavoriteProducts)
 
@@ -82,7 +86,12 @@ class HistoryFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
-                    favoriteAdapter.submitList(state.favoriteProducts)
+                    val favoriteProductUiModels = state.favoriteProducts.map { product ->
+                        product.toUiModel()
+                    }
+
+                    favoriteAdapter.submitList(favoriteProductUiModels)
+
                     tvEmptyFavoriteProducts.visibility = if (state.favoriteProducts.isEmpty()) {
                         View.VISIBLE
                     } else {

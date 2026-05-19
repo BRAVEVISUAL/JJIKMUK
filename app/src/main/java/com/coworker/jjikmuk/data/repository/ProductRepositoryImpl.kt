@@ -1,10 +1,11 @@
 package com.coworker.jjikmuk.data.repository
 
+import com.coworker.jjikmuk.data.local.dummy.ProductDummyData
 import com.coworker.jjikmuk.domain.model.Product
 import com.coworker.jjikmuk.domain.repository.ProductRepository
-import com.coworker.jjikmuk.feature.product.dummy.ProductDummyData
+import javax.inject.Inject
 
-class ProductRepositoryImpl : ProductRepository {
+class ProductRepositoryImpl @Inject constructor() : ProductRepository {
 
     override fun getAllProducts(): List<Product> {
         return ProductDummyData.recommendProducts

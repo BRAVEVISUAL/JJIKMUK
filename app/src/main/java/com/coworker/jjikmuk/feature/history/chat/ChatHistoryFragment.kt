@@ -25,11 +25,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.core.navigation.BottomNavController
 import com.coworker.jjikmuk.feature.history.chat.adapter.ChatHistoryAdapter
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
+@AndroidEntryPoint
 class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
 
     private val viewModel: ChatHistoryViewModel by viewModels()

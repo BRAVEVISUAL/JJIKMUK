@@ -1,28 +1,25 @@
 package com.coworker.jjikmuk.feature.product.detail
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.coworker.jjikmuk.data.repository.FavoriteRepositoryImpl
-import com.coworker.jjikmuk.data.repository.ProductRepositoryImpl
 import com.coworker.jjikmuk.domain.repository.FavoriteRepository
 import com.coworker.jjikmuk.domain.repository.ProductRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ProductDetailViewModel(
-    application: Application
-) : AndroidViewModel(application) {
-
-    private val productRepository: ProductRepository = ProductRepositoryImpl()
-    private val favoriteRepository: FavoriteRepository = FavoriteRepositoryImpl(
-        context = application.applicationContext
-    )
+@HiltViewModel
+class ProductDetailViewModel @Inject constructor(
+    private val productRepository: ProductRepository,
+    private val favoriteRepository: FavoriteRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProductDetailUiState())
-    val uiState: StateFlow<ProductDetailUiState> = _uiState
+    val uiState: StateFlow<ProductDetailUiState> = _uiState.asStateFlow()
 
     private var currentProductId: String = ""
 

@@ -4,9 +4,11 @@ import android.content.Context
 import com.coworker.jjikmuk.data.local.preference.FavoriteProductStore
 import com.coworker.jjikmuk.domain.model.Product
 import com.coworker.jjikmuk.domain.repository.FavoriteRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
-class FavoriteRepositoryImpl(
-    private val context: Context
+class FavoriteRepositoryImpl @Inject constructor(
+    @ApplicationContext private val context: Context
 ) : FavoriteRepository {
 
     override suspend fun isFavorite(productId: String): Boolean {

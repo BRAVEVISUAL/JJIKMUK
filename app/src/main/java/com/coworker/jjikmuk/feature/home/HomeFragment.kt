@@ -16,7 +16,6 @@ import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.Switch
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -25,20 +24,18 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.chat.ChatFragment
-import com.coworker.jjikmuk.core.navigation.BottomNavController
-import com.coworker.jjikmuk.domain.model.UserProfile
-import com.coworker.jjikmuk.domain.model.UploadOption
-import com.coworker.jjikmuk.feature.history.chat.ChatHistoryFragment
-import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.coworker.jjikmuk.feature.navigation.BottomNavController
 import kotlinx.coroutines.launch
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val viewModel: HomeViewModel by viewModels()
 
     private lateinit var layoutSelectedProfiles: FrameLayout
     private lateinit var etHomeMessage: EditText
-    private var currentProfiles: List<UserProfile> = emptyList()
+    private var currentProfiles: List<HomeProfileUiModel> = emptyList()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -46,8 +43,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         layoutSelectedProfiles = view.findViewById(R.id.layoutSelectedProfiles)
 
         etHomeMessage = view.findViewById(R.id.etHomeMessage)
-        val btnMenu = view.findViewById<ImageButton>(R.id.btnMenu)
-        val btnPlus = view.findViewById<ImageButton>(R.id.btnPlus)
         val btnSend = view.findViewById<ImageButton>(R.id.btnSend)
 
         observeViewModel()
@@ -57,17 +52,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         layoutSelectedProfiles.setOnClickListener {
             showScanTargetPopup(layoutSelectedProfiles)
-        }
-
-        btnMenu.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.mainContainer, ChatHistoryFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-        btnPlus.setOnClickListener {
-            showUploadOptionBottomSheet()
         }
 
         btnSend.setOnClickListener {
@@ -89,60 +73,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.uiState.collect { state ->
-                        currentProfiles = state.profiles
-                        updateSelectedProfileImages(state.selectedProfiles)
-                    }
+                viewModel.uiState.collect { state ->
+                    currentProfiles = state.profiles
+                    updateSelectedProfileImages(state.selectedProfiles)
                 }
-
-                launch {
-                    viewModel.event.collect { event ->
-                        handleHomeEvent(event)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun showUploadOptionBottomSheet() {
-        val dialog = BottomSheetDialog(requireContext())
-        val bottomSheetView = layoutInflater.inflate(
-            R.layout.bottom_sheet_home_upload_options,
-            null
-        )
-
-        bottomSheetView.findViewById<View>(R.id.layoutTakePhoto).setOnClickListener {
-            dialog.dismiss()
-            viewModel.onUploadOptionSelected(UploadOption.TAKE_PHOTO)
-        }
-
-        bottomSheetView.findViewById<View>(R.id.layoutUploadImage).setOnClickListener {
-            dialog.dismiss()
-            viewModel.onUploadOptionSelected(UploadOption.UPLOAD_IMAGE)
-        }
-
-        bottomSheetView.findViewById<View>(R.id.layoutUploadFile).setOnClickListener {
-            dialog.dismiss()
-            viewModel.onUploadOptionSelected(UploadOption.UPLOAD_FILE)
-        }
-
-        dialog.setContentView(bottomSheetView)
-        dialog.show()
-    }
-
-    private fun handleHomeEvent(event: HomeEvent) {
-        when (event) {
-            HomeEvent.OpenCamera -> {
-                Toast.makeText(requireContext(), "사진찍기 기능을 준비 중입니다.", Toast.LENGTH_SHORT).show()
-            }
-
-            HomeEvent.OpenImagePicker -> {
-                Toast.makeText(requireContext(), "이미지 업로드 기능을 준비 중입니다.", Toast.LENGTH_SHORT).show()
-            }
-
-            HomeEvent.OpenFilePicker -> {
-                Toast.makeText(requireContext(), "파일 업로드 기능을 준비 중입니다.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -193,7 +127,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
             ivProfileImage.setImageResource(profile.imageResId)
             tvProfileName.text = profile.name
-            tvProfileRelation.text = getProfileRelationText(profile)
+            tvProfileRelation.text = profile.relationText
             switchProfile.isChecked = profile.isSelected
 
             switchProfile.setOnCheckedChangeListener { _, _ ->
@@ -230,7 +164,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         )
     }
 
-    private fun updateSelectedProfileImages(selectedProfiles: List<UserProfile>) {
+    private fun updateSelectedProfileImages(selectedProfiles: List<HomeProfileUiModel>) {
         if (!::layoutSelectedProfiles.isInitialized) return
 
         layoutSelectedProfiles.removeAllViews()
@@ -261,7 +195,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun addSelectedProfileImage(
-        profile: UserProfile,
+        profile: HomeProfileUiModel,
         rightMarginDp: Int
     ) {
         val imageView = ImageView(requireContext()).apply {
@@ -283,15 +217,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         layoutSelectedProfiles.addView(imageView)
-    }
-
-    private fun getProfileRelationText(profile: UserProfile): String {
-        return when (profile.id) {
-            "me" -> "나"
-            "coworker" -> "배우자"
-            "family_1" -> "자녀"
-            else -> "가족"
-        }
     }
 
     private fun dp(value: Int): Int {
