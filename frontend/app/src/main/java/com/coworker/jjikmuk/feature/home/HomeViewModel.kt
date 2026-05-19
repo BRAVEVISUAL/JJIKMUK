@@ -14,7 +14,13 @@ class HomeViewModel @Inject constructor(
     userProfileRepository: UserProfileRepository
 ) : ViewModel() {
 
-    private val initialProfiles = userProfileRepository.getProfiles()
+    private val initialProfiles: List<HomeProfileUiModel> =
+        userProfileRepository.getProfiles()
+            .mapIndexed { index, profile ->
+                profile.toHomeProfileUiModel(
+                    isSelected = index == 0
+                )
+            }
 
     private val _uiState = MutableStateFlow(
         HomeUiState(

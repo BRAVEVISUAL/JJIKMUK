@@ -25,7 +25,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.chat.ChatFragment
 import com.coworker.jjikmuk.core.navigation.BottomNavController
-import com.coworker.jjikmuk.domain.model.UserProfile
 import kotlinx.coroutines.launch
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -36,7 +35,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private lateinit var layoutSelectedProfiles: FrameLayout
     private lateinit var etHomeMessage: EditText
-    private var currentProfiles: List<UserProfile> = emptyList()
+    private var currentProfiles: List<HomeProfileUiModel> = emptyList()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -128,7 +127,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
             ivProfileImage.setImageResource(profile.imageResId)
             tvProfileName.text = profile.name
-            tvProfileRelation.text = getProfileRelationText(profile)
+            tvProfileRelation.text = profile.relationText
             switchProfile.isChecked = profile.isSelected
 
             switchProfile.setOnCheckedChangeListener { _, _ ->
@@ -165,7 +164,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         )
     }
 
-    private fun updateSelectedProfileImages(selectedProfiles: List<UserProfile>) {
+    private fun updateSelectedProfileImages(selectedProfiles: List<HomeProfileUiModel>) {
         if (!::layoutSelectedProfiles.isInitialized) return
 
         layoutSelectedProfiles.removeAllViews()
@@ -196,7 +195,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun addSelectedProfileImage(
-        profile: UserProfile,
+        profile: HomeProfileUiModel,
         rightMarginDp: Int
     ) {
         val imageView = ImageView(requireContext()).apply {
@@ -218,15 +217,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         layoutSelectedProfiles.addView(imageView)
-    }
-
-    private fun getProfileRelationText(profile: UserProfile): String {
-        return when (profile.id) {
-            "me" -> "나"
-            "coworker" -> "배우자"
-            "family_1" -> "자녀"
-            else -> "가족"
-        }
     }
 
     private fun dp(value: Int): Int {
