@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.coworker.jjikmuk.R
-import com.coworker.jjikmuk.core.navigation.BottomNavController
+import com.coworker.jjikmuk.feature.navigation.BottomNavController
 import com.coworker.jjikmuk.domain.model.Product
 import com.coworker.jjikmuk.feature.product.mapper.toUiModel
 import kotlinx.coroutines.launch

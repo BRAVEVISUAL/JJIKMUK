@@ -24,7 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.chat.ChatFragment
-import com.coworker.jjikmuk.core.navigation.BottomNavController
+import com.coworker.jjikmuk.feature.navigation.BottomNavController
 import kotlinx.coroutines.launch
 import dagger.hilt.android.AndroidEntryPoint
 

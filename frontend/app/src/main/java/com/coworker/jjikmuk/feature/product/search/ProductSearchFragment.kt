@@ -12,7 +12,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
-import com.coworker.jjikmuk.core.navigation.BottomNavController
+import com.coworker.jjikmuk.feature.navigation.BottomNavController
 import com.coworker.jjikmuk.feature.product.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
 import com.coworker.jjikmuk.feature.product.mapper.toUiModel

@@ -1,4 +1,4 @@
-package com.coworker.jjikmuk.core.navigation
+package com.coworker.jjikmuk.feature.navigation
 
 import android.content.Context
 import android.view.View
