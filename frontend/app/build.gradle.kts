@@ -29,6 +29,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        viewBinding = true
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -42,6 +46,7 @@ android {
             isMinifyEnabled = false
         }
     }
+
 
     compileOptions {
         // Mac / Windows 양쪽에서 같은 기준으로 빌드되도록 Java 11 고정
