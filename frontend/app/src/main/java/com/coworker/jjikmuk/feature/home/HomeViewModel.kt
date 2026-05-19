@@ -1,45 +1,31 @@
 package com.coworker.jjikmuk.feature.home
 
 import androidx.lifecycle.ViewModel
-import com.coworker.jjikmuk.R
-import com.coworker.jjikmuk.domain.model.UserProfile
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import com.coworker.jjikmuk.domain.repository.UserProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 @HiltViewModel
-class HomeViewModel @Inject constructor() : ViewModel() {
+class HomeViewModel @Inject constructor(
+    userProfileRepository: UserProfileRepository
+) : ViewModel() {
 
-    private val initialProfiles = listOf(
-        UserProfile(
-            id = "me",
-            name = "나",
-            imageResId = R.drawable.ic_launcher_foreground,
-            isSelected = true
-        ),
-        UserProfile(
-            id = "coworker",
-            name = "코워커",
-            imageResId = R.drawable.ic_launcher_foreground,
-            isSelected = false
-        ),
-        UserProfile(
-            id = "family_1",
-            name = "가족 1",
-            imageResId = R.drawable.ic_launcher_foreground,
-            isSelected = false
-        )
-    )
+    private val initialProfiles = userProfileRepository.getProfiles()
 
     private val _uiState = MutableStateFlow(
         HomeUiState(
             profiles = initialProfiles,
-            selectedProfiles = initialProfiles.filter { profile -> profile.isSelected }
+            selectedProfiles = initialProfiles.filter { profile ->
+                profile.isSelected
+            }
         )
     )
-    val uiState: StateFlow<HomeUiState> = _uiState
+
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     fun updateInputMessage(message: String) {
         _uiState.update { state ->
@@ -59,7 +45,9 @@ class HomeViewModel @Inject constructor() : ViewModel() {
 
             state.copy(
                 profiles = updatedProfiles,
-                selectedProfiles = updatedProfiles.filter { profile -> profile.isSelected }
+                selectedProfiles = updatedProfiles.filter { profile ->
+                    profile.isSelected
+                }
             )
         }
     }
