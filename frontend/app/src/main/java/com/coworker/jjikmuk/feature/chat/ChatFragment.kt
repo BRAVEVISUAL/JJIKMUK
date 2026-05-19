@@ -17,12 +17,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.chat.adapter.ChatMessageAdapter
-import com.coworker.jjikmuk.feature.product.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
+import com.coworker.jjikmuk.feature.product.model.ProductUiModel
 import com.coworker.jjikmuk.feature.product.search.ProductSearchFragment
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import kotlinx.coroutines.launch
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ChatFragment : Fragment() {
@@ -46,25 +45,40 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        rvChatMessages = view.findViewById(R.id.rvChatMessages)
-        etChatMessage = view.findViewById(R.id.etChatMessage)
-        btnChatSend = view.findViewById(R.id.btnChatSend)
-
+        initViews(view)
         setupChatMessageRecyclerView()
-
-        val btnChatBack = view.findViewById<ImageButton>(R.id.btnChatBack)
-        tvChatTitle = view.findViewById(R.id.tvChatTitle)
-
-        btnChatBack.setOnClickListener {
-            parentFragmentManager.popBackStack()
-        }
-
+        setupClickListeners(view)
         observeViewModel()
 
         val initialMessage = arguments?.getString(ARG_INITIAL_MESSAGE).orEmpty()
 
         if (initialMessage.isNotBlank()) {
             viewModel.startChat(initialMessage)
+        }
+    }
+
+    private fun initViews(view: View) {
+        rvChatMessages = view.findViewById(R.id.rvChatMessages)
+        etChatMessage = view.findViewById(R.id.etChatMessage)
+        btnChatSend = view.findViewById(R.id.btnChatSend)
+        tvChatTitle = view.findViewById(R.id.tvChatTitle)
+    }
+
+    private fun setupChatMessageRecyclerView() {
+        chatMessageAdapter = ChatMessageAdapter()
+
+        rvChatMessages.layoutManager = LinearLayoutManager(requireContext()).apply {
+            stackFromEnd = true
+        }
+        rvChatMessages.adapter = chatMessageAdapter
+        rvChatMessages.isNestedScrollingEnabled = false
+    }
+
+    private fun setupClickListeners(view: View) {
+        val btnChatBack = view.findViewById<ImageButton>(R.id.btnChatBack)
+
+        btnChatBack.setOnClickListener {
+            parentFragmentManager.popBackStack()
         }
 
         btnChatSend.setOnClickListener {
@@ -81,16 +95,6 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun setupChatMessageRecyclerView() {
-        chatMessageAdapter = ChatMessageAdapter()
-
-        rvChatMessages.layoutManager = LinearLayoutManager(requireContext()).apply {
-            stackFromEnd = true
-        }
-        rvChatMessages.adapter = chatMessageAdapter
-        rvChatMessages.isNestedScrollingEnabled = false
-    }
-
     private fun sendCurrentMessage() {
         val message = etChatMessage.text.toString().trim()
 
@@ -105,65 +109,47 @@ class ChatFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     tvChatTitle.text = state.title
+
                     chatMessageAdapter.submitList(state.messages) {
                         scrollToBottom()
                     }
 
                     if (state.shouldShowRecommendSheet) {
                         rvChatMessages.postDelayed({
-                            showRecommendProductBottomSheet()
+                            if (!isAdded) return@postDelayed
+
+                            showRecommendProductBottomSheet(state.recommendedProducts)
                             viewModel.onRecommendSheetShown()
-                        }, 500)
+                        }, RECOMMEND_SHEET_DELAY_MILLIS)
                     }
                 }
             }
         }
     }
 
-    private fun showRecommendProductBottomSheet() {
-        val dialog = BottomSheetDialog(requireContext())
-
-        val bottomSheetView = layoutInflater.inflate(
-            R.layout.bottom_sheet_recommend_products,
-            null
-        )
-
-        val rvRecommendProducts =
-            bottomSheetView.findViewById<RecyclerView>(R.id.rvRecommendProducts)
-
-        val btnMoreProducts =
-            bottomSheetView.findViewById<TextView>(R.id.btnMoreProducts)
-
-        val adapter = RecommendProductAdapter { product ->
-            dialog.dismiss()
-
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.mainContainer, ProductDetailFragment.newInstance(product.id))
-                .addToBackStack(null)
-                .commit()
-        }
-
-        rvRecommendProducts.layoutManager = LinearLayoutManager(requireContext())
-        rvRecommendProducts.adapter = adapter
-        rvRecommendProducts.isNestedScrollingEnabled = false
-
-        adapter.submitList(viewModel.uiState.value.recommendedProducts)
-
-        btnMoreProducts.setOnClickListener {
-            dialog.dismiss()
-
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.mainContainer, ProductSearchFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-        dialog.setContentView(bottomSheetView)
-        dialog.show()
+    private fun showRecommendProductBottomSheet(products: List<ProductUiModel>) {
+        RecommendProductBottomSheet(
+            context = requireContext(),
+            layoutInflater = layoutInflater,
+            products = products,
+            onProductClick = { product ->
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.mainContainer, ProductDetailFragment.newInstance(product.id))
+                    .addToBackStack(null)
+                    .commit()
+            },
+            onMoreClick = {
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.mainContainer, ProductSearchFragment())
+                    .addToBackStack(null)
+                    .commit()
+            }
+        ).show()
     }
 
     private fun scrollToBottom() {
         val lastIndex = chatMessageAdapter.itemCount - 1
+
         if (lastIndex >= 0) {
             rvChatMessages.scrollToPosition(lastIndex)
         }
@@ -171,6 +157,7 @@ class ChatFragment : Fragment() {
 
     companion object {
         private const val ARG_INITIAL_MESSAGE = "initial_message"
+        private const val RECOMMEND_SHEET_DELAY_MILLIS = 500L
 
         fun newInstance(initialMessage: String): ChatFragment {
             return ChatFragment().apply {
