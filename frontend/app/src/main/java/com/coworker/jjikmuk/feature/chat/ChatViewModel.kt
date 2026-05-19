@@ -3,6 +3,7 @@ package com.coworker.jjikmuk.feature.chat
 import androidx.lifecycle.ViewModel
 import com.coworker.jjikmuk.domain.model.ChatMessage
 import com.coworker.jjikmuk.domain.repository.ChatRepository
+import com.coworker.jjikmuk.feature.product.mapper.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +26,7 @@ class ChatViewModel @Inject constructor(
 
         val userMessage = createUserMessage(initialMessage)
         val botMessage = createBotMessage(chatRepository.makeDummyResponse(initialMessage))
-        val recommendProducts = chatRepository.getRecommendProducts(limit = 2)
+        val recommendProducts = getRecommendProductUiModels()
 
         _uiState.update { state ->
             state.copy(
@@ -45,7 +46,7 @@ class ChatViewModel @Inject constructor(
 
         val userMessage = createUserMessage(trimmedMessage)
         val botMessage = createBotMessage(chatRepository.makeDummyResponse(trimmedMessage))
-        val recommendProducts = chatRepository.getRecommendProducts(limit = 2)
+        val recommendProducts = getRecommendProductUiModels()
 
         _uiState.update { state ->
             state.copy(
@@ -63,6 +64,12 @@ class ChatViewModel @Inject constructor(
             state.copy(shouldShowRecommendSheet = false)
         }
     }
+
+    private fun getRecommendProductUiModels() =
+        chatRepository.getRecommendProducts(limit = 2)
+            .map { product ->
+                product.toUiModel()
+            }
 
     private fun createUserMessage(message: String): ChatMessage {
         return ChatMessage(

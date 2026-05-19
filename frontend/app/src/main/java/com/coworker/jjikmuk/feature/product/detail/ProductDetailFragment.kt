@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.core.navigation.BottomNavController
 import com.coworker.jjikmuk.domain.model.Product
+import com.coworker.jjikmuk.feature.product.mapper.toUiModel
 import kotlinx.coroutines.launch
 
 class ProductDetailFragment : Fragment() {
@@ -47,6 +48,7 @@ class ProductDetailFragment : Fragment() {
 
     private fun initViews(view: View) {
         val btnProductDetailBack = view.findViewById<ImageButton>(R.id.btnProductDetailBack)
+
         btnProductFavorite = view.findViewById(R.id.btnProductFavorite)
         ivProductDetailImage = view.findViewById(R.id.ivProductDetailImage)
         tvProductDetailCategory = view.findViewById(R.id.tvProductDetailCategory)
@@ -86,11 +88,13 @@ class ProductDetailFragment : Fragment() {
             return
         }
 
+        val productUiModel = product.toUiModel()
+
         btnProductFavorite.visibility = View.VISIBLE
-        ivProductDetailImage.setImageResource(product.imageResId)
-        tvProductDetailCategory.text = product.category
-        tvProductDetailName.text = product.name
-        renderAllergyTags(product.allergyTags)
+        ivProductDetailImage.setImageResource(productUiModel.imageResId)
+        tvProductDetailCategory.text = productUiModel.category
+        tvProductDetailName.text = productUiModel.name
+        renderAllergyTags(productUiModel.allergyTags)
     }
 
     private fun renderAllergyTags(allergyTags: List<String>) {
