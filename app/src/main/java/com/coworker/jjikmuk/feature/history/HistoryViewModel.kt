@@ -36,4 +36,16 @@ class HistoryViewModel @Inject constructor(
             }
         }
     }
+
+    fun selectLikesTab() {
+        _uiState.update { state ->
+            state.copy(selectedTab = HistoryTab.LIKES)
+        }
+    }
+
+    fun selectRecentlyViewedTab() {
+        _uiState.update { state ->
+            state.copy(selectedTab = HistoryTab.RECENTLY_VIEWED)
+        }
+    }
 }
