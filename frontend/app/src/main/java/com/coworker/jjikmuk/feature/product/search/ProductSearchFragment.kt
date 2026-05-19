@@ -16,8 +16,10 @@ import com.coworker.jjikmuk.feature.navigation.BottomNavController
 import com.coworker.jjikmuk.feature.product.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
 import com.coworker.jjikmuk.feature.product.mapper.toUiModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class ProductSearchFragment : Fragment() {
 
     private val viewModel: ProductSearchViewModel by viewModels()

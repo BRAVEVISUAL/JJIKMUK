@@ -1,25 +1,23 @@
 package com.coworker.jjikmuk.feature.history
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.coworker.jjikmuk.data.repository.FavoriteRepositoryImpl
 import com.coworker.jjikmuk.domain.repository.FavoriteRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class HistoryViewModel(
-    application: Application
-) : AndroidViewModel(application) {
-
-    private val favoriteRepository: FavoriteRepository = FavoriteRepositoryImpl(
-        context = application.applicationContext
-    )
+@HiltViewModel
+class HistoryViewModel @Inject constructor(
+    private val favoriteRepository: FavoriteRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HistoryUiState())
-    val uiState: StateFlow<HistoryUiState> = _uiState
+    val uiState: StateFlow<HistoryUiState> = _uiState.asStateFlow()
 
     fun loadFavoriteProducts() {
         viewModelScope.launch {
@@ -36,6 +34,18 @@ class HistoryViewModel(
                     errorMessage = null
                 )
             }
+        }
+    }
+
+    fun selectLikesTab() {
+        _uiState.update { state ->
+            state.copy(selectedTab = HistoryTab.LIKES)
+        }
+    }
+
+    fun selectRecentlyViewedTab() {
+        _uiState.update { state ->
+            state.copy(selectedTab = HistoryTab.RECENTLY_VIEWED)
         }
     }
 }

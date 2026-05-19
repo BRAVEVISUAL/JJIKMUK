@@ -17,7 +17,7 @@
         android:layout_marginTop="40dp"
         android:background="@android:color/transparent"
         android:contentDescription="메뉴 열기"
-        android:src="@drawable/ic_home_menu"
+        android:src="@drawable/ic_home_chatmenu"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="TouchTargetSizeCheck" />
@@ -47,16 +47,26 @@
 
     </FrameLayout>
 
-    <TextView
+<!--    <TextView-->
+<!--        android:id="@+id/tvLogo"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="64dp"-->
+<!--        android:layout_marginTop="102dp"-->
+<!--        android:gravity="center"-->
+<!--        android:text="JJIKMUK"-->
+<!--        android:textColor="@color/jjikmuk_green"-->
+<!--        android:textSize="32sp"-->
+<!--        android:textStyle="bold"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/btnMenu" />-->
+
+    <com.coworker.jjikmuk.feature.home.AnimatedJjikmukIconView
         android:id="@+id/tvLogo"
-        android:layout_width="wrap_content"
-        android:layout_height="64dp"
-        android:layout_marginTop="102dp"
-        android:gravity="center"
-        android:text="JJIKMUK"
-        android:textColor="@color/jjikmuk_green"
-        android:textSize="32sp"
-        android:textStyle="bold"
+        android:layout_width="89dp"
+        android:layout_height="89dp"
+        android:layout_marginTop="90dp"
+        android:contentDescription="JJIKMUK"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnMenu" />

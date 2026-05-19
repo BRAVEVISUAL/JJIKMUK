@@ -1,10 +1,14 @@
 package com.coworker.jjikmuk.feature.history
 
 import android.os.Bundle
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -18,8 +22,10 @@ import com.coworker.jjikmuk.feature.navigation.BottomNavController
 import com.coworker.jjikmuk.feature.product.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
 import com.coworker.jjikmuk.feature.product.mapper.toUiModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class HistoryFragment : Fragment() {
 
     private val viewModel: HistoryViewModel by viewModels()
@@ -42,6 +48,7 @@ class HistoryFragment : Fragment() {
         initViews(view)
         setupRecyclerView()
         setupClickListeners(view)
+        setupHistoryTabClickListeners(view)
         observeViewModel()
 
         viewModel.loadFavoriteProducts()
@@ -80,6 +87,52 @@ class HistoryFragment : Fragment() {
         BottomNavController.bind(view, parentFragmentManager, requireContext())
     }
 
+    private fun setupHistoryTabClickListeners(view: View) {
+        val layoutLikesTab = view.findViewById<LinearLayout>(R.id.layoutLikesTab)
+        val layoutRecentlyViewedTab = view.findViewById<LinearLayout>(R.id.layoutRecentlyViewedTab)
+
+        layoutLikesTab.setOnClickListener {
+            viewModel.selectLikesTab()
+        }
+
+        layoutRecentlyViewedTab.setOnClickListener {
+            viewModel.selectRecentlyViewedTab()
+        }
+    }
+
+    private fun updateHistoryTabStyle(
+        view: View,
+        selectedTab: HistoryTab
+    ) {
+        val layoutLikesTab = view.findViewById<LinearLayout>(R.id.layoutLikesTab)
+        val layoutRecentlyViewedTab = view.findViewById<LinearLayout>(R.id.layoutRecentlyViewedTab)
+        val tvLikesTab = view.findViewById<TextView>(R.id.tvLikesTab)
+        val tvRecentlyViewedTab = view.findViewById<TextView>(R.id.tvRecentlyViewedTab)
+        val ivLikesIcon = view.findViewById<ImageView>(R.id.ivLikesIcon)
+        val tvRecentlyViewedIcon = view.findViewById<TextView>(R.id.tvRecentlyViewedIcon)
+
+        val isLikesSelected = selectedTab == HistoryTab.LIKES
+        val selectedGreen = Color.parseColor("#E8FCD4")
+        val unselectedGray = Color.parseColor("#A0A0A5")
+        val selectedText = Color.parseColor("#111111")
+        val unselectedText = Color.WHITE
+
+        layoutLikesTab.backgroundTintList = ColorStateList.valueOf(
+            if (isLikesSelected) selectedGreen else unselectedGray
+        )
+        layoutRecentlyViewedTab.backgroundTintList = ColorStateList.valueOf(
+            if (isLikesSelected) unselectedGray else selectedGreen
+        )
+
+        tvLikesTab.setTextColor(if (isLikesSelected) selectedText else unselectedText)
+        tvRecentlyViewedTab.setTextColor(if (isLikesSelected) unselectedText else selectedText)
+        tvRecentlyViewedIcon.setTextColor(if (isLikesSelected) unselectedText else selectedText)
+
+        ivLikesIcon.imageTintList = ColorStateList.valueOf(
+            if (isLikesSelected) selectedText else unselectedText
+        )
+    }
+
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -95,6 +148,11 @@ class HistoryFragment : Fragment() {
                     } else {
                         View.GONE
                     }
+
+                    updateHistoryTabStyle(
+                        view = requireView(),
+                        selectedTab = state.selectedTab
+                    )
                 }
             }
         }

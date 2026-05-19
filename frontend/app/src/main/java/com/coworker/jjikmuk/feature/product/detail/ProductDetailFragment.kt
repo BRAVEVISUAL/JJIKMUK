@@ -14,8 +14,10 @@ import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.navigation.BottomNavController
 import com.coworker.jjikmuk.domain.model.Product
 import com.coworker.jjikmuk.feature.product.mapper.toUiModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class ProductDetailFragment : Fragment() {
 
     private val viewModel: ProductDetailViewModel by viewModels()
