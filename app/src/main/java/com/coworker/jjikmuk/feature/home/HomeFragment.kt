@@ -24,11 +24,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.coworker.jjikmuk.R
+import com.coworker.jjikmuk.core.common.showUploadOptionBottomSheet
 import com.coworker.jjikmuk.domain.model.UploadOption
 import com.coworker.jjikmuk.feature.chat.ChatFragment
 import com.coworker.jjikmuk.feature.history.chat.ChatHistoryFragment
 import com.coworker.jjikmuk.feature.navigation.BottomNavController
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -68,7 +68,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         btnPlus.setOnClickListener {
-            showUploadOptionBottomSheet()
+            showUploadOptionBottomSheet(viewModel::onUploadOptionSelected)
         }
 
         btnSend.setOnClickListener {
@@ -104,32 +104,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 }
             }
         }
-    }
-
-    private fun showUploadOptionBottomSheet() {
-        val dialog = BottomSheetDialog(requireContext())
-        val bottomSheetView = layoutInflater.inflate(
-            R.layout.bottom_sheet_home_upload_options,
-            null
-        )
-
-        bottomSheetView.findViewById<View>(R.id.layoutTakePhoto).setOnClickListener {
-            dialog.dismiss()
-            viewModel.onUploadOptionSelected(UploadOption.TAKE_PHOTO)
-        }
-
-        bottomSheetView.findViewById<View>(R.id.layoutUploadImage).setOnClickListener {
-            dialog.dismiss()
-            viewModel.onUploadOptionSelected(UploadOption.UPLOAD_IMAGE)
-        }
-
-        bottomSheetView.findViewById<View>(R.id.layoutUploadFile).setOnClickListener {
-            dialog.dismiss()
-            viewModel.onUploadOptionSelected(UploadOption.UPLOAD_FILE)
-        }
-
-        dialog.setContentView(bottomSheetView)
-        dialog.show()
     }
 
     private fun handleHomeEvent(event: HomeEvent) {

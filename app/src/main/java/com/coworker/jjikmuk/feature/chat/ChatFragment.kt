@@ -8,6 +8,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -16,6 +17,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
+import com.coworker.jjikmuk.core.common.showUploadOptionBottomSheet
+import com.coworker.jjikmuk.domain.model.UploadOption
 import com.coworker.jjikmuk.feature.chat.adapter.ChatMessageAdapter
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
 import com.coworker.jjikmuk.feature.product.model.ProductUiModel
@@ -76,9 +79,15 @@ class ChatFragment : Fragment() {
 
     private fun setupClickListeners(view: View) {
         val btnChatBack = view.findViewById<ImageButton>(R.id.btnChatBack)
+        val btnChatPlus = view.findViewById<ImageButton>(R.id.btnChatPlus)
 
         btnChatBack.setOnClickListener {
             parentFragmentManager.popBackStack()
+        }
+
+        btnChatPlus.setOnClickListener {
+            etChatMessage.clearFocus()
+            showUploadOptionBottomSheet(viewModel::onUploadOptionSelected)
         }
 
         btnChatSend.setOnClickListener {
@@ -107,22 +116,46 @@ class ChatFragment : Fragment() {
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { state ->
-                    tvChatTitle.text = state.title
+                launch {
+                    viewModel.uiState.collect { state ->
+                        tvChatTitle.text = state.title
 
-                    chatMessageAdapter.submitList(state.messages) {
-                        scrollToBottom()
-                    }
+                        chatMessageAdapter.submitList(state.messages) {
+                            scrollToBottom()
+                        }
 
-                    if (state.shouldShowRecommendSheet) {
-                        rvChatMessages.postDelayed({
-                            if (!isAdded) return@postDelayed
+                        if (state.shouldShowRecommendSheet) {
+                            rvChatMessages.postDelayed({
+                                if (!isAdded) return@postDelayed
 
-                            showRecommendProductBottomSheet(state.recommendedProducts)
-                            viewModel.onRecommendSheetShown()
-                        }, RECOMMEND_SHEET_DELAY_MILLIS)
+                                showRecommendProductBottomSheet(state.recommendedProducts)
+                                viewModel.onRecommendSheetShown()
+                            }, RECOMMEND_SHEET_DELAY_MILLIS)
+                        }
                     }
                 }
+
+                launch {
+                    viewModel.uploadOptionEvent.collect { option ->
+                        handleUploadOption(option)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun handleUploadOption(option: UploadOption) {
+        when (option) {
+            UploadOption.TAKE_PHOTO -> {
+                Toast.makeText(requireContext(), "사진찍기 기능을 준비 중입니다.", Toast.LENGTH_SHORT).show()
+            }
+
+            UploadOption.UPLOAD_IMAGE -> {
+                Toast.makeText(requireContext(), "이미지 업로드 기능을 준비 중입니다.", Toast.LENGTH_SHORT).show()
+            }
+
+            UploadOption.UPLOAD_FILE -> {
+                Toast.makeText(requireContext(), "파일 업로드 기능을 준비 중입니다.", Toast.LENGTH_SHORT).show()
             }
         }
     }

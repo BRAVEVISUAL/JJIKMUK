@@ -1,15 +1,20 @@
 package com.coworker.jjikmuk.feature.chat
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.coworker.jjikmuk.domain.model.ChatMessage
+import com.coworker.jjikmuk.domain.model.UploadOption
 import com.coworker.jjikmuk.domain.repository.ChatRepository
 import com.coworker.jjikmuk.feature.product.mapper.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
@@ -18,6 +23,9 @@ class ChatViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
+
+    private val _uploadOptionEvent = MutableSharedFlow<UploadOption>()
+    val uploadOptionEvent: SharedFlow<UploadOption> = _uploadOptionEvent
 
     private var nextMessageId: Long = 0L
 
@@ -62,6 +70,12 @@ class ChatViewModel @Inject constructor(
     fun onRecommendSheetShown() {
         _uiState.update { state ->
             state.copy(shouldShowRecommendSheet = false)
+        }
+    }
+
+    fun onUploadOptionSelected(option: UploadOption) {
+        viewModelScope.launch {
+            _uploadOptionEvent.emit(option)
         }
     }
 
