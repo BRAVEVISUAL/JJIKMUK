@@ -1,22 +1,22 @@
 package com.coworker.jjikmuk.feature.chat
 
 import androidx.lifecycle.ViewModel
-import com.coworker.jjikmuk.data.repository.ChatRepositoryImpl
 import com.coworker.jjikmuk.domain.model.ChatMessage
 import com.coworker.jjikmuk.domain.repository.ChatRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 @HiltViewModel
-class ChatViewModel @Inject constructor() : ViewModel() {
-
-    private val chatRepository: ChatRepository = ChatRepositoryImpl()
+class ChatViewModel @Inject constructor(
+    private val chatRepository: ChatRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
-    val uiState: StateFlow<ChatUiState> = _uiState
+    val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
     private var nextMessageId: Long = 0L
 
