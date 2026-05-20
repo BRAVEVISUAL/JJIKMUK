@@ -223,14 +223,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         otherProfiles.asReversed().forEachIndexed { index, profile ->
             addSelectedProfileImage(
                 profile = profile,
-                rightMarginDp = index * 15
+                rightMarginDp = index * 8
             )
         }
 
         myProfile?.let { profile ->
             addSelectedProfileImage(
                 profile = profile,
-                rightMarginDp = otherProfiles.size * 15
+                rightMarginDp = otherProfiles.size * 8
             )
         }
     }
