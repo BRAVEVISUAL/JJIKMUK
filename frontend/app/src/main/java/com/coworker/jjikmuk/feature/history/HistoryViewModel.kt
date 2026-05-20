@@ -22,7 +22,10 @@ class HistoryViewModel @Inject constructor(
     fun loadFavoriteProducts() {
         viewModelScope.launch {
             _uiState.update { state ->
-                state.copy(isLoading = true, errorMessage = null)
+                state.copy(
+                    isLoading = true,
+                    errorMessage = null
+                )
             }
 
             val favoriteProducts = favoriteRepository.getFavoriteProducts()
@@ -30,8 +33,27 @@ class HistoryViewModel @Inject constructor(
             _uiState.update { state ->
                 state.copy(
                     favoriteProducts = favoriteProducts,
+                    unfavoritedProductIds = emptySet(),
                     isLoading = false,
                     errorMessage = null
+                )
+            }
+        }
+    }
+
+    fun toggleFavorite(productId: String) {
+        viewModelScope.launch {
+            val isNowFavorite = favoriteRepository.toggleFavorite(productId)
+
+            _uiState.update { state ->
+                val updatedUnfavoritedProductIds = if (isNowFavorite) {
+                    state.unfavoritedProductIds - productId
+                } else {
+                    state.unfavoritedProductIds + productId
+                }
+
+                state.copy(
+                    unfavoritedProductIds = updatedUnfavoritedProductIds
                 )
             }
         }

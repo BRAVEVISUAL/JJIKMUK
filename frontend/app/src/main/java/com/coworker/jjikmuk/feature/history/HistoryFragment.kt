@@ -1,8 +1,8 @@
 package com.coworker.jjikmuk.feature.history
 
-import android.os.Bundle
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,8 +18,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
+import com.coworker.jjikmuk.feature.history.product.ProductHistoryAdapter
 import com.coworker.jjikmuk.feature.navigation.BottomNavController
-import com.coworker.jjikmuk.feature.product.adapter.RecommendProductAdapter
 import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
 import com.coworker.jjikmuk.feature.product.mapper.toUiModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,7 +30,7 @@ class HistoryFragment : Fragment() {
 
     private val viewModel: HistoryViewModel by viewModels()
 
-    private lateinit var favoriteAdapter: RecommendProductAdapter
+    private lateinit var favoriteAdapter: ProductHistoryAdapter
     private lateinit var rvFavoriteProducts: RecyclerView
     private lateinit var tvEmptyFavoriteProducts: TextView
 
@@ -71,12 +71,17 @@ class HistoryFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        favoriteAdapter = RecommendProductAdapter { product ->
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.mainContainer, ProductDetailFragment.newInstance(product.id))
-                .addToBackStack(null)
-                .commit()
-        }
+        favoriteAdapter = ProductHistoryAdapter(
+            onProductClick = { product ->
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.mainContainer, ProductDetailFragment.newInstance(product.id))
+                    .addToBackStack(null)
+                    .commit()
+            },
+            onFavoriteClick = { product ->
+                viewModel.toggleFavorite(product.id)
+            }
+        )
 
         rvFavoriteProducts.layoutManager = LinearLayoutManager(requireContext())
         rvFavoriteProducts.adapter = favoriteAdapter
@@ -138,7 +143,9 @@ class HistoryFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     val favoriteProductUiModels = state.favoriteProducts.map { product ->
-                        product.toUiModel()
+                        product.toUiModel().copy(
+                            isFavorite = !state.unfavoritedProductIds.contains(product.id)
+                        )
                     }
 
                     favoriteAdapter.submitList(favoriteProductUiModels)

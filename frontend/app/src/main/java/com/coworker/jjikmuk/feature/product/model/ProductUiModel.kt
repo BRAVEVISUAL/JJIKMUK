@@ -5,5 +5,6 @@ data class ProductUiModel(
     val category: String,
     val name: String,
     val imageResId: Int,
-    val allergyTags: List<String> = emptyList()
+    val allergyTags: List<String> = emptyList(),
+    val isFavorite: Boolean = false
 )

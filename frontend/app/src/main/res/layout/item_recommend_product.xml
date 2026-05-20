@@ -9,9 +9,9 @@
     android:layout_marginBottom="12dp"
     android:background="@drawable/bg_recommend_product_card"
     android:paddingStart="20dp"
-    android:paddingTop="22dp"
+    android:paddingTop="12dp"
     android:paddingEnd="14dp"
-    android:paddingBottom="18dp">
+    android:paddingBottom="12dp">
 
     <FrameLayout
         android:id="@+id/layoutProductImageBox"
@@ -36,6 +36,7 @@
         android:id="@+id/tvProductCategory"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="18dp"
         android:textColor="#9A9A9A"
         android:textSize="16sp"
@@ -66,6 +67,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="18dp"
+        android:layout_marginBottom="8dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -100,5 +102,18 @@
             tools:text="🥜 땅콩" />
 
     </LinearLayout>
+    <ImageButton
+        android:id="@+id/btnProductFavorite"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="즐겨찾기"
+        android:padding="7dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_heart_filled"
+        android:translationZ="8dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

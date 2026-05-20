@@ -6,7 +6,8 @@ data class HistoryUiState(
     val favoriteProducts: List<Product> = emptyList(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val selectedTab: HistoryTab = HistoryTab.LIKES
+    val selectedTab: HistoryTab = HistoryTab.LIKES,
+    val unfavoritedProductIds: Set<String> = emptySet()
 )
 
 enum class HistoryTab {
