@@ -12,17 +12,20 @@ class FakeUserProfileRepository @Inject constructor() : UserProfileRepository {
             UserProfile(
                 id = "me",
                 name = "나",
-                relation = ProfileRelation.ME
+                relation = ProfileRelation.ME,
+                allergies = listOf("소고기", "우유", "땅콩")
             ),
             UserProfile(
                 id = "coworker",
                 name = "코워커",
-                relation = ProfileRelation.COWORKER
+                relation = ProfileRelation.COWORKER,
+                allergies = listOf("새우", "게")
             ),
             UserProfile(
                 id = "family_1",
                 name = "가족 1",
-                relation = ProfileRelation.FAMILY
+                relation = ProfileRelation.FAMILY,
+                allergies = listOf("복숭아")
             )
         )
     }

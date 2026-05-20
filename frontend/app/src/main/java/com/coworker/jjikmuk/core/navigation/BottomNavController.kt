@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentManager
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.feature.history.HistoryFragment
 import com.coworker.jjikmuk.feature.home.HomeFragment
+import com.coworker.jjikmuk.feature.mypage.MyPageFragment
 
 object BottomNavController {
 
@@ -38,7 +39,10 @@ object BottomNavController {
         }
 
         rootView.findViewById<View?>(R.id.navMy)?.setOnClickListener {
-            showComingSoon(context)
+            fragmentManager.beginTransaction()
+                .replace(R.id.mainContainer, MyPageFragment())
+                .addToBackStack(null)
+                .commit()
         }
     }
 

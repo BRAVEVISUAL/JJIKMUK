@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.coworker.jjikmuk.domain.model.ChatMessage
 import com.coworker.jjikmuk.domain.model.UploadOption
 import com.coworker.jjikmuk.domain.repository.ChatRepository
+import com.coworker.jjikmuk.domain.repository.MealContextRepository
 import com.coworker.jjikmuk.feature.product.mapper.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -18,7 +19,8 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
-    private val chatRepository: ChatRepository
+    private val chatRepository: ChatRepository,
+    private val mealContextRepository: MealContextRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -32,8 +34,11 @@ class ChatViewModel @Inject constructor(
     fun startChat(initialMessage: String) {
         if (initialMessage.isBlank()) return
 
+        val mealContext = mealContextRepository.mealContext.value
         val userMessage = createUserMessage(initialMessage)
-        val botMessage = createBotMessage(chatRepository.makeDummyResponse(initialMessage))
+        val botMessage = createBotMessage(
+            chatRepository.makeDummyResponse(initialMessage, mealContext)
+        )
         val recommendProducts = getRecommendProductUiModels()
 
         _uiState.update { state ->
@@ -52,8 +57,11 @@ class ChatViewModel @Inject constructor(
         val trimmedMessage = message.trim()
         if (trimmedMessage.isBlank()) return
 
+        val mealContext = mealContextRepository.mealContext.value
         val userMessage = createUserMessage(trimmedMessage)
-        val botMessage = createBotMessage(chatRepository.makeDummyResponse(trimmedMessage))
+        val botMessage = createBotMessage(
+            chatRepository.makeDummyResponse(trimmedMessage, mealContext)
+        )
         val recommendProducts = getRecommendProductUiModels()
 
         _uiState.update { state ->

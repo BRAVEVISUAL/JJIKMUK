@@ -11,6 +11,7 @@ fun UserProfile.toHomeProfileUiModel(
         id = id,
         name = name,
         relationText = relation.toDisplayText(),
+        allergies = allergies,
         imageResId = relation.toImageResId(),
         isSelected = isSelected
     )

@@ -3,6 +3,7 @@ package com.coworker.jjikmuk.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.coworker.jjikmuk.domain.model.UploadOption
+import com.coworker.jjikmuk.domain.repository.MealContextRepository
 import com.coworker.jjikmuk.domain.repository.UserProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -16,14 +17,17 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    userProfileRepository: UserProfileRepository
+    userProfileRepository: UserProfileRepository,
+    private val mealContextRepository: MealContextRepository
 ) : ViewModel() {
+
+    private val selectedProfileIds = mealContextRepository.mealContext.value.selectedProfileIds
 
     private val initialProfiles: List<HomeProfileUiModel> =
         userProfileRepository.getProfiles()
-            .mapIndexed { index, profile ->
+            .map { profile ->
                 profile.toHomeProfileUiModel(
-                    isSelected = index == 0
+                    isSelected = profile.id in selectedProfileIds
                 )
             }
 
@@ -62,7 +66,11 @@ class HomeViewModel @Inject constructor(
                 selectedProfiles = updatedProfiles.filter { profile ->
                     profile.isSelected
                 }
-            )
+            ).also { nextState ->
+                mealContextRepository.setSelectedProfileIds(
+                    nextState.selectedProfiles.map { profile -> profile.id }.toSet()
+                )
+            }
         }
     }
 

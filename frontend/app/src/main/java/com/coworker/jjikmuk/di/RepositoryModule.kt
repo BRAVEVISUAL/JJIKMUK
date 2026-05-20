@@ -4,10 +4,12 @@ import com.coworker.jjikmuk.data.repository.ChatRepositoryImpl
 import com.coworker.jjikmuk.data.repository.ChatHistoryRepositoryImpl
 import com.coworker.jjikmuk.data.repository.FakeUserProfileRepository
 import com.coworker.jjikmuk.data.repository.FavoriteRepositoryImpl
+import com.coworker.jjikmuk.data.repository.MealContextRepositoryImpl
 import com.coworker.jjikmuk.data.repository.ProductRepositoryImpl
 import com.coworker.jjikmuk.domain.repository.ChatHistoryRepository
 import com.coworker.jjikmuk.domain.repository.ChatRepository
 import com.coworker.jjikmuk.domain.repository.FavoriteRepository
+import com.coworker.jjikmuk.domain.repository.MealContextRepository
 import com.coworker.jjikmuk.domain.repository.ProductRepository
 import com.coworker.jjikmuk.domain.repository.UserProfileRepository
 import dagger.Binds
@@ -43,6 +45,12 @@ abstract class RepositoryModule {
     abstract fun bindUserProfileRepository(
         impl: FakeUserProfileRepository
     ): UserProfileRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMealContextRepository(
+        impl: MealContextRepositoryImpl
+    ): MealContextRepository
 
     @Binds
     @Singleton
