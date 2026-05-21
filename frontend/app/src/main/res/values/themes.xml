@@ -11,6 +11,8 @@
         <item name="android:statusBarColor">@color/white</item>
         <item name="android:navigationBarColor">@color/white</item>
         <item name="android:windowBackground">@color/white</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="fontFamily">@font/pretendard</item>
 
         <!-- Shadow settings used by XML elevation -->
         <item name="android:ambientShadowAlpha">0.3</item>
