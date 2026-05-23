@@ -36,6 +36,7 @@
         app:layout_constraintTop_toTopOf="@id/btnChatHistoryBack" />
 
     <TextView
+        style="@style/Text.Baloo.Bold"
         android:id="@+id/tvChatHistoryTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -43,8 +44,7 @@
         android:layout_marginTop="18dp"
         android:text="Chat"
         android:textColor="@color/jjikmuk_green"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:textSize="30sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnChatHistoryBack" />
 

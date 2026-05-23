@@ -59,13 +59,14 @@
             </FrameLayout>
 
             <TextView
+                style="@style/Text.Baloo.Bold"
                 android:id="@+id/tvHistoryTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="History"
                 android:textColor="@color/jjikmuk_green"
-                android:textSize="24sp"
+                android:textSize="30sp"
                 android:textStyle="bold" />
 
             <LinearLayout
