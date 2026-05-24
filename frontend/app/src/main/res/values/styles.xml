@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Text.Pretendard.Regular">
+    <style name="Text">
+        <item name="android:fontFamily">@font/pretendard_regular</item>
+        <item name="fontFamily">@font/pretendard_regular</item>
+    </style>
+
+    <style name="Text.Pretendard">
         <item name="android:fontFamily">@font/pretendard_regular</item>
         <item name="fontFamily">@font/pretendard_regular</item>
     </style>
@@ -16,7 +21,7 @@
         <item name="fontFamily">@font/pretendard_bold</item>
     </style>
 
-    <style name="Text.Baloo.Regular">
+    <style name="Text.Baloo">
         <item name="android:fontFamily">@font/baloo_regular</item>
         <item name="fontFamily">@font/baloo_regular</item>
     </style>

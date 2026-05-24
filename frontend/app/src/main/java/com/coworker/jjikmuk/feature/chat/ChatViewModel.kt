@@ -32,24 +32,37 @@ class ChatViewModel @Inject constructor(
     private var nextMessageId: Long = 0L
 
     fun startChat(initialMessage: String) {
-        if (initialMessage.isBlank()) return
+        val trimmedMessage = initialMessage.trim()
+        if (trimmedMessage.isBlank()) return
 
         val mealContext = mealContextRepository.mealContext.value
-        val userMessage = createUserMessage(initialMessage)
-        val botMessage = createBotMessage(
-            chatRepository.makeDummyResponse(initialMessage, mealContext)
-        )
+        val userMessage = createUserMessage(trimmedMessage)
         val recommendProducts = getRecommendProductUiModels()
 
         _uiState.update { state ->
             state.copy(
-                title = makeTitle(initialMessage),
-                messages = listOf(userMessage, botMessage),
+                title = makeTitle(trimmedMessage),
+                messages = listOf(userMessage),
                 recommendedProducts = recommendProducts,
-                shouldShowRecommendSheet = true,
-                isLoading = false,
+                shouldShowRecommendSheet = false,
+                isLoading = true,
                 errorMessage = null
             )
+        }
+
+        viewModelScope.launch {
+            val botAnswer = chatRepository.sendMessage(trimmedMessage, mealContext)
+            val botMessage = createBotMessage(botAnswer)
+
+            _uiState.update { state ->
+                state.copy(
+                    messages = state.messages + botMessage,
+                    recommendedProducts = recommendProducts,
+                    shouldShowRecommendSheet = true,
+                    isLoading = false,
+                    errorMessage = null
+                )
+            }
         }
     }
 
@@ -59,19 +72,31 @@ class ChatViewModel @Inject constructor(
 
         val mealContext = mealContextRepository.mealContext.value
         val userMessage = createUserMessage(trimmedMessage)
-        val botMessage = createBotMessage(
-            chatRepository.makeDummyResponse(trimmedMessage, mealContext)
-        )
         val recommendProducts = getRecommendProductUiModels()
 
         _uiState.update { state ->
             state.copy(
-                messages = state.messages + userMessage + botMessage,
+                messages = state.messages + userMessage,
                 recommendedProducts = recommendProducts,
-                shouldShowRecommendSheet = true,
-                isLoading = false,
+                shouldShowRecommendSheet = false,
+                isLoading = true,
                 errorMessage = null
             )
+        }
+
+        viewModelScope.launch {
+            val botAnswer = chatRepository.sendMessage(trimmedMessage, mealContext)
+            val botMessage = createBotMessage(botAnswer)
+
+            _uiState.update { state ->
+                state.copy(
+                    messages = state.messages + botMessage,
+                    recommendedProducts = recommendProducts,
+                    shouldShowRecommendSheet = true,
+                    isLoading = false,
+                    errorMessage = null
+                )
+            }
         }
     }
 

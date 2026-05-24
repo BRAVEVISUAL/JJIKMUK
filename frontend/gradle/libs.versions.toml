@@ -4,6 +4,8 @@
 # Hilt Gradle Plugin이 AGP 9.1.0에서 Android BaseExtension을 찾지 못해 실패했기 때문에
 # Hilt 적용을 위해 AGP 8.x 안정 조합으로 낮춥니다.
 agp = "8.9.1"
+retrofit = "2.11.0"
+okhttp = "4.12.0"
 
 # AGP 8.x에서는 Kotlin Android 플러그인을 별도로 적용해야 Kotlin 파일을 컴파일할 수 있습니다.
 # AGP 9.x에서는 Kotlin 지원이 내장되어 있었지만, AGP 8.x로 내리면 이 플러그인이 필요합니다.
@@ -60,6 +62,10 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.r
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 
 [plugins]
 # Android Application 플러그인입니다.
