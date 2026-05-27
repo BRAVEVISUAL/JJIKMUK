@@ -29,6 +29,10 @@ class ProductInitializer(
 
             // ⚠️ 읽어올 파일명이 'Product.csv'인지, 'final_product_db.csv'인지 맞게 수정해주세요!
             val resource = ClassPathResource("data/Product.csv")
+            if (!resource.exists()) {
+                println("data/Product.csv 파일이 없어 제품 초기 적재를 건너뜁니다.")
+                return@CommandLineRunner
+            }
             val batchSize = 1000
             val productList = mutableListOf<Product>()
             val existingBarcodes = mutableSetOf<String>() // 💡 중복 바코드 방어용 Set
@@ -58,6 +62,13 @@ class ProductInitializer(
                 val sodiumMgIdx = headers.indexOf("sodium_mg")
                 val cholesterolMgIdx = headers.indexOf("cholesterol_mg")
                 val allergyWarningIdx = headers.indexOf("allergy_warning")
+                val cleanProductNameIdx = headers.indexOf("clean_product_name")
+                val totalWeightIdx = headers.indexOf("total_weight")
+                val carbsPercentIdx = headers.indexOf("carbs_percent(%)")
+                val proteinPercentIdx = headers.indexOf("protein_percent(%)")
+                val fatPercentIdx = headers.indexOf("fat_percent(%)")
+                val sodiumGIdx = headers.indexOf("sodium_g")
+                val cholesterolGIdx = headers.indexOf("cholesterol_g")
 
                 println("헤더 파싱 완료! 바코드 열의 위치는: $barcodeIdx 번 칸입니다.")
 
@@ -99,7 +110,14 @@ class ProductInitializer(
                             sugarG = getDouble(sugarGIdx),
                             sodiumMg = getDouble(sodiumMgIdx),
                             cholesterolMg = getDouble(cholesterolMgIdx),
-                            allergyWarning = getString(allergyWarningIdx)
+                            allergyWarning = getString(allergyWarningIdx),
+                            cleanProductName = getString(cleanProductNameIdx),
+                            totalWeight = getString(totalWeightIdx),
+                            carbsPercent = getDouble(carbsPercentIdx),
+                            proteinPercent = getDouble(proteinPercentIdx),
+                            fatPercent = getDouble(fatPercentIdx),
+                            sodiumG = getDouble(sodiumGIdx),
+                            cholesterolG = getDouble(cholesterolGIdx)
                         )
 
                         productList.add(product)
