@@ -1,5 +1,7 @@
 package com.coworker.jjikmuk.data.remote.dto
 
+import com.google.gson.JsonElement
+
 data class ChatApiRequest(
     val profiles: List<ChatApiProfile>,
     val product: ChatApiProduct? = null,
@@ -44,5 +46,11 @@ data class ChatApiResponse(
 data class ChatApiRecommendedProduct(
     val product_name: String? = null,
     val barcode: String? = null,
+    val prdlst_dcnm: String? = null,
+    val rawmtrl_nm: String? = null,
+    val allergy: JsonElement? = null,
+    val allergy_info: JsonElement? = null,
+    val nutrition: JsonElement? = null,
+    val selection_type: String? = null,
     val reason: String? = null
 )

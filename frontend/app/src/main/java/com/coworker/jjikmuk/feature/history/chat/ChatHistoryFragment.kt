@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.core.navigation.BottomNavController
+import com.coworker.jjikmuk.feature.chat.ChatFragment
 import com.coworker.jjikmuk.feature.history.chat.adapter.ChatHistoryAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -51,6 +52,11 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
         observeViewModel()
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadChatHistories()
+    }
+
     private fun initViews(view: View) {
         etChatHistorySearch = view.findViewById(R.id.etChatHistorySearch)
         tvEmptyChatHistories = view.findViewById(R.id.tvEmptyChatHistories)
@@ -59,7 +65,10 @@ class ChatHistoryFragment : Fragment(R.layout.fragment_chat_history) {
 
     private fun setupRecyclerView(view: View) {
         chatHistoryAdapter = ChatHistoryAdapter { history ->
-            Toast.makeText(requireContext(), history.title, Toast.LENGTH_SHORT).show()
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.mainContainer, ChatFragment.newInstance(history.id))
+                .addToBackStack(null)
+                .commit()
         }
 
         val rvChatHistories = view.findViewById<RecyclerView>(R.id.rvChatHistories)

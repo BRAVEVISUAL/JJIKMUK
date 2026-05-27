@@ -18,11 +18,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coworker.jjikmuk.R
 import com.coworker.jjikmuk.core.common.showUploadOptionBottomSheet
+import com.coworker.jjikmuk.domain.model.ChatProductCandidate
 import com.coworker.jjikmuk.domain.model.UploadOption
 import com.coworker.jjikmuk.feature.chat.adapter.ChatMessageAdapter
-import com.coworker.jjikmuk.feature.product.detail.ProductDetailFragment
 import com.coworker.jjikmuk.feature.product.model.ProductUiModel
-import com.coworker.jjikmuk.feature.product.search.ProductSearchFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -53,9 +52,13 @@ class ChatFragment : Fragment() {
         setupClickListeners(view)
         observeViewModel()
 
+        val chatHistoryId = arguments?.getLong(ARG_CHAT_HISTORY_ID, UNKNOWN_CHAT_HISTORY_ID)
+            ?: UNKNOWN_CHAT_HISTORY_ID
         val initialMessage = arguments?.getString(ARG_INITIAL_MESSAGE).orEmpty()
 
-        if (initialMessage.isNotBlank()) {
+        if (chatHistoryId != UNKNOWN_CHAT_HISTORY_ID) {
+            viewModel.loadChatHistory(chatHistoryId)
+        } else if (initialMessage.isNotBlank()) {
             viewModel.startChat(initialMessage)
         }
     }
@@ -128,7 +131,10 @@ class ChatFragment : Fragment() {
                             rvChatMessages.postDelayed({
                                 if (!isAdded) return@postDelayed
 
-                                showRecommendProductBottomSheet(state.recommendedProducts)
+                                showProductCandidateBottomSheet(
+                                    title = state.productCandidateSheetTitle,
+                                    productCandidates = state.productCandidates
+                                )
                                 viewModel.onRecommendSheetShown()
                             }, RECOMMEND_SHEET_DELAY_MILLIS)
                         }
@@ -160,25 +166,67 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun showRecommendProductBottomSheet(products: List<ProductUiModel>) {
+    private fun showProductCandidateBottomSheet(
+        title: String,
+        productCandidates: List<ChatProductCandidate>
+    ) {
+        if (productCandidates.isEmpty()) return
+
+        val candidateItems = productCandidates.mapIndexed { index, candidate ->
+            val id = candidate.makeUiId(index)
+            CandidateSheetItem(
+                candidate = candidate,
+                uiModel = candidate.toUiModel(id)
+            )
+        }
+        val candidateById = candidateItems.associate { item ->
+            item.uiModel.id to item.candidate
+        }
+
         RecommendProductBottomSheet(
             context = requireContext(),
             layoutInflater = layoutInflater,
-            products = products,
+            title = title,
+            products = candidateItems.map { item -> item.uiModel },
+            bottomOffsetPx = calculateChatInputBottomOffset(),
+            showMoreButton = false,
             onProductClick = { product ->
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.mainContainer, ProductDetailFragment.newInstance(product.id))
-                    .addToBackStack(null)
-                    .commit()
-            },
-            onMoreClick = {
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.mainContainer, ProductSearchFragment())
-                    .addToBackStack(null)
-                    .commit()
+                candidateById[product.id]?.let { candidate ->
+                    viewModel.selectProductCandidate(candidate)
+                }
             }
         ).show()
     }
+
+    private fun calculateChatInputBottomOffset(): Int {
+        val layoutParams = etChatMessage.rootView
+            .findViewById<View>(R.id.layoutChatInput)
+            .layoutParams as? ViewGroup.MarginLayoutParams
+        val bottomMargin = layoutParams?.bottomMargin ?: 0
+
+        return etChatMessage.rootView
+            .findViewById<View>(R.id.layoutChatInput)
+            .height + bottomMargin
+    }
+
+    private fun ChatProductCandidate.makeUiId(index: Int): String {
+        return barcode.ifBlank { productName }.ifBlank { index.toString() } + "_$index"
+    }
+
+    private fun ChatProductCandidate.toUiModel(id: String): ProductUiModel {
+        return ProductUiModel(
+            id = id,
+            category = category.ifBlank { "상품 후보" },
+            name = productName.ifBlank { "이름 없는 상품" },
+            imageResId = R.drawable.ic_launcher_foreground,
+            allergyTags = allergy.take(2)
+        )
+    }
+
+    private data class CandidateSheetItem(
+        val candidate: ChatProductCandidate,
+        val uiModel: ProductUiModel
+    )
 
     private fun scrollToBottom() {
         val lastIndex = chatMessageAdapter.itemCount - 1
@@ -190,12 +238,22 @@ class ChatFragment : Fragment() {
 
     companion object {
         private const val ARG_INITIAL_MESSAGE = "initial_message"
+        private const val ARG_CHAT_HISTORY_ID = "chat_history_id"
+        private const val UNKNOWN_CHAT_HISTORY_ID = -1L
         private const val RECOMMEND_SHEET_DELAY_MILLIS = 500L
 
         fun newInstance(initialMessage: String): ChatFragment {
             return ChatFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_INITIAL_MESSAGE, initialMessage)
+                }
+            }
+        }
+
+        fun newInstance(chatHistoryId: Long): ChatFragment {
+            return ChatFragment().apply {
+                arguments = Bundle().apply {
+                    putLong(ARG_CHAT_HISTORY_ID, chatHistoryId)
                 }
             }
         }

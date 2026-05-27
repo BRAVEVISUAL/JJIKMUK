@@ -48,39 +48,19 @@ class ChatHistoryViewModel @Inject constructor(
     }
 
     fun pinChatHistory(historyId: Long) {
-        _uiState.update { state ->
-            val histories = state.histories.map { history ->
-                if (history.id == historyId) {
-                    history.copy(isPinned = !history.isPinned)
-                } else {
-                    history
-                }
-            }.let(::sortHistories)
-
-            state.copy(
-                histories = histories,
-                filteredHistories = filterHistories(histories, state.searchQuery)
-            )
-        }
+        repository.togglePinChatHistory(historyId)
+        loadChatHistories()
     }
 
     fun deleteChatHistory(historyId: Long) {
-        _uiState.update { state ->
-            val histories = state.histories.filterNot { history ->
-                history.id == historyId
-            }
-
-            state.copy(
-                histories = histories,
-                filteredHistories = filterHistories(histories, state.searchQuery)
-            )
-        }
+        repository.deleteChatHistory(historyId)
+        loadChatHistories()
     }
 
     private fun sortHistories(histories: List<ChatHistory>): List<ChatHistory> {
         return histories.sortedWith(
             compareByDescending<ChatHistory> { history -> history.isPinned }
-                .thenBy { history -> history.id }
+                .thenByDescending { history -> history.id }
         )
     }
 

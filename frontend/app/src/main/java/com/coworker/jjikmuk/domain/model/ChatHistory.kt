@@ -5,5 +5,6 @@ data class ChatHistory(
     val title: String,
     val subtitle: String,
     val lastMessageTime: String,
-    val isPinned: Boolean = false
+    val isPinned: Boolean = false,
+    val messages: List<ChatMessage> = emptyList()
 )
